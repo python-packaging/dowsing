@@ -1,0 +1,18 @@
+
+* dowsing.requires
+  * equivalent to pep517.get_requirements_for_*
+  * tracks where it was found (filename/node)
+* dowsing.deps
+  * dep walking code from honesty, plus build-from-source mode that has
+    setup_requires
+* general setuptools
+  * allow find_packages (pypidb)
+  * manifest (py.typed but doesn't include it)
+* setup_py_parsing
+  * recognize open-a-file-and-read-it
+  * allow some string function calls (aioitertools)
+  * "possible" and "required" imports (missing setup_requires, needs local stuff
+    not in manifest, or requires->setup_requires)
+
+* pyasn1 (`try/except to set params; params.update; setup(**params)`)
+
