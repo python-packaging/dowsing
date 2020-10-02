@@ -32,7 +32,7 @@ def get_backend(path: Path) -> Tuple[List[str], BaseReader]:
     try:
         backend_path = KNOWN_BACKENDS[backend]
     except KeyError:
-        raise Exception(f"Unknonw pep517 backend {backend!r}")
+        raise Exception(f"Unknown pep517 backend {backend!r}")
 
     mod, _, x = backend_path.partition(":")
     cls: Type[BaseReader] = getattr(importlib.import_module(mod), x)
