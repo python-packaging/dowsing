@@ -1,8 +1,33 @@
 # dowsing
 
-TODO: Reword so it flows better.
+Short version:
+
+```
+python -m dowsing.pep517 /path/to/repo | jq .
+```
+
+or
+
+```
+from dowsing.pep517 import get_metadata
+dist = get_metadata(Path("/path/to/repo"))
+```
 
 ## Basic reasoning
+
+I don't want to execute arbitrary `setup.py` in order to find out their basic
+metadata.  I don't want to use the pep517 module in a sandbox, because commonly
+packages forget to list their build-time dependencies.
+
+This project is one step better than grepping source files, but also understands
+`build-system` in `pyproject.toml` (from PEP 517/518).  It does pretty well run
+on a sampling of pypi projects, but does fail on some notable ones (including
+setuptools).
+
+When it fails, a key will be `"??"` and due to some quirks in list context, this
+can be `["?", "?"]`.
+
+## A rant
 
 The reality of python packaging, even with recent PEPs, is that most nontrivial
 python packages do moderately interesting stuff in their `setup.py`:
@@ -13,27 +38,24 @@ python packages do moderately interesting stuff in their `setup.py`:
 * Making sure native libs are installed, or there's a working C compiler
 * Choosing deps based on platform
 
-The disappointing part of several of these from the perspective of basically
-running a distro, is that they produce messages intended for humans, rather than
-actually using the mechanisms that we have in PEP 508 (environment markers) and
-518 (pyproject.toml requires).
+From the perspective of basically running a distro, they produce messages
+intended for humans, rather than actually using the mechanisms that we have in
+PEP 508 (environment markers) and 518 (pyproject.toml requires).  There is also
+no well-specified way to request native libs, and many projects choose to fail
+to run `setup.py` when libs are missing.
 
 ## Goals
 
 This project is a bridge to find several things out, about primarily setup.py
-but also understanding PEP 517/518 as a one-stop-shop, about:
+but also understanding some popular PEP 517/518 builders as a one-stop-shop, about:
 
-* for cases where the package's version is stored within, but has external
-  requirements that are not listed at build-time, currently returns an unknown
-  value and moves on
-* potential imports, to guess at what should have been in the build-time
-  requirements (e.g `numpy.distutils` is pretty clear)
-* doesn't actually execute, so fetches or execs can't cause it to fail
-* Gives the PEP 517 APIs `get_requirements_for_sdist` and
-  `get_requirements_for_build_wheel`, even on a different platform through
-  simulated execution, with no sandboxing required.
-* A lower-level api suitable for making edits to the place where the setup args
-  are defined.
+* doesn't actually execute, so fetches or execs can't cause it to fail [done]
+* cases where we could find out the version string, but it fails to import [done]
+* lets you simulate the `pep517` module's output on different platforms [done]
+* a lower-level api suitable for making edits to the place where the setup args
+  are defined [done]
+* to list potential imports, and guess at missing build-time deps (something
+  like `numpy.distutils` is pretty clear) [todo]
 
 ## Doing this "right"
 
@@ -45,6 +67,10 @@ current version of python.
 If you're willing to run the code and have it take longer, take a look at the
 pep517 api `get_requires_for_*` or have it generate the metadata (assuming
 what you want is in there).  An example is in `dowsing/_demo_pep517.py`
+
+This project's `dowsing.pep517` api is designed to do something similar, but not
+fail on missing build-time requirements.
+
 
 # Further Reading
 
