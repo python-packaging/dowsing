@@ -1,12 +1,4 @@
-from .flit import FlitReaderTest
-from .setuptools import SetuptoolsReaderTest
-
-__all__ = [
-    "FlitReaderTest",
-    "SetuptoolsReaderTest",
-]
+import unittest
 
 if __name__ == "__main__":
-    import unittest
-
-    unittest.main()
+    unittest.main(module="dowsing.tests", verbosity=2)

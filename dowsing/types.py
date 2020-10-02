@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, Optional, Sequence, Tuple
+from typing import Any, Dict, Optional, Sequence, Tuple
 
 import pkginfo.distribution
 
@@ -16,13 +16,22 @@ class BaseReader:
         """
         Equivalent to the pep517 api.
         """
-        pass
+        raise NotImplementedError
 
     def get_requires_for_build_wheel(self) -> Sequence[str]:
         """
         Equivalent to the pep517 api.
         """
-        pass
+        raise NotImplementedError
+
+    def get_metadata(self) -> "Distribution":
+        """
+        Gets a Distribution object with the metadata.
+
+        Closer to pkginfo (it uses a subclass) than what you would get just by
+        using email.parser.
+        """
+        raise NotImplementedError
 
 
 # TODO: pkginfo isn't typed, and is doing to require a yak-shave to send a PR
@@ -52,7 +61,7 @@ class Distribution(pkginfo.distribution.Distribution):  # type: ignore
             ("Namespace-Package", "namespace_packages", True),
         )
 
-    def asdict(self):
+    def asdict(self) -> Dict[str, Any]:
         d = {}
         for x in self:
             if getattr(self, x):

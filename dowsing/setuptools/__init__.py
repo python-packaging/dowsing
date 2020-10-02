@@ -1,6 +1,5 @@
 from pathlib import Path
-
-import imperfect
+from typing import Sequence, Tuple
 
 from ..types import BaseReader, Distribution
 from .setup_cfg_parsing import from_setup_cfg
@@ -11,7 +10,7 @@ class SetuptoolsReader(BaseReader):
     def __init__(self, path: Path):
         self.path = path
 
-    def get_requires_for_build_sdist(self):
+    def get_requires_for_build_sdist(self) -> Sequence[str]:
         # TODO the documented behavior of pip (setuptools with a version
         # constraint) and what the pep517 module's build.compat_system does
         # differ.
@@ -20,10 +19,10 @@ class SetuptoolsReader(BaseReader):
         # https://github.com/pypa/pep517/blob/master/pep517/build.py
         return ("setuptools",) + self._get_requires()
 
-    def get_requires_for_build_wheel(self):
+    def get_requires_for_build_wheel(self) -> Sequence[str]:
         return ("setuptools", "wheel") + self._get_requires()
 
-    def get_metadata(self):
+    def get_metadata(self) -> Distribution:
         if (self.path / "setup.cfg").exists():
             d1 = from_setup_cfg(self.path, {})
         else:
@@ -37,10 +36,6 @@ class SetuptoolsReader(BaseReader):
 
         return d1
 
-    def _get_requires(self):
+    def _get_requires(self) -> Tuple[str, ...]:
         dist = self.get_metadata()
         return tuple(dist.setup_requires)
-
-
-if __name__ == "__main__":
-    print(json.dumps(from_setup_cfg(Path(sys.argv[1]), {}).asdict(), indent=2))

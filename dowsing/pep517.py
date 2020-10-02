@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple, Type
 
 import tomlkit
 
-from .types import BaseReader
+from .types import BaseReader, Distribution
 
 KNOWN_BACKENDS: Dict[str, str] = {
     "setuptools.build_meta:__legacy__": "dowsing.setuptools:SetuptoolsReader",
@@ -18,6 +18,7 @@ KNOWN_BACKENDS: Dict[str, str] = {
 def get_backend(path: Path) -> Tuple[List[str], BaseReader]:
     pyproject = path / "pyproject.toml"
     backend = "setuptools.build_meta:__legacy__"
+    # TODO for setuptools, we should also include requirements
     requires: List[str] = []
     if pyproject.exists():
         doc = tomlkit.parse(pyproject.read_text())
@@ -40,7 +41,7 @@ def get_backend(path: Path) -> Tuple[List[str], BaseReader]:
     return requires, cls(path)
 
 
-def get_requires_for_build_sdist(path: Path):
+def get_requires_for_build_sdist(path: Path) -> List[str]:
     # TODO config_settings, env
 
     requires, backend = get_backend(path)
@@ -48,21 +49,21 @@ def get_requires_for_build_sdist(path: Path):
     return requires + list(backend.get_requires_for_build_sdist())
 
 
-def get_requires_for_build_wheel(path: Path):
+def get_requires_for_build_wheel(path: Path) -> List[str]:
     # TODO config_settings, env
 
     requires, backend = get_backend(path)
     return requires + list(backend.get_requires_for_build_wheel())
 
 
-def get_metadata(path: Path):
+def get_metadata(path: Path) -> Distribution:
     # TODO config_settings, env
 
     _, backend = get_backend(path)
     return backend.get_metadata()
 
 
-def main(path: Path):
+def main(path: Path) -> None:
     d = {
         "get_requires_for_build_sdist": get_requires_for_build_sdist(path),
         "get_requires_for_build_wheel": get_requires_for_build_wheel(path),

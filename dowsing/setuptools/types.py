@@ -8,6 +8,9 @@ class BaseWriter:
     def to_ini(self, value: Any) -> str:  # pragma: no cover
         raise NotImplementedError
 
+    def from_ini(self, value: str) -> Any:  # pragma: no cover
+        raise NotImplementedError
+
 
 class StrWriter(BaseWriter):
     def to_ini(self, value: str) -> str:
@@ -25,7 +28,7 @@ class ListCommaWriter(BaseWriter):
 
     def from_ini(self, value: str) -> List[str]:
         # TODO, on all of these, handle other separators, \r, and stripping
-        return value.split("\n")
+        return value.strip().split("\n")
 
 
 class ListCommaWriterCompat(BaseWriter):
@@ -37,7 +40,7 @@ class ListCommaWriterCompat(BaseWriter):
         return "".join(f"\n{k}" for k in value)
 
     def from_ini(self, value: str) -> List[str]:
-        return value.split("\n")
+        return value.strip().split("\n")
 
 
 class ListSemiWriter(BaseWriter):
@@ -47,7 +50,7 @@ class ListSemiWriter(BaseWriter):
         return "".join(f"\n{k}" for k in value)
 
     def from_ini(self, value: str) -> List[str]:
-        return value.split("\n")
+        return value.strip().split("\n")
 
 
 # This class is also specialcased
@@ -75,7 +78,7 @@ class DictWriter(BaseWriter):
 
     def from_ini(self, value: str) -> Dict[str, str]:
         d = {}
-        for line in value.split("\n"):
+        for line in value.strip().split("\n"):
             a, b, c = line.partition("=")
             a = a.strip()
             c = c.strip()
@@ -108,13 +111,19 @@ class ConfigField:
     """
     A ConfigField is almost a 1:1 mapping to metadata fields.
 
-    The writers in SetupCfg should translate between the richer value used in 
+    The writer_cls in SetupCfg should translate between the richer value used in
+    Python, and the serialized-in-ini value, including complex things like
+    indents.
     """
 
     # The kwarg to setup()
     keyword: str
+    # The section/key in setup.cfg
     cfg: SetupCfg
+    # TODO PyProject reference
+    # The key in METADATA files
     metadata: Optional[Metadata] = None
+    # Used for automatic test generation; use None if it should be skipped.
     sample_value: Optional[Any] = "foo"
     # Not all kwargs end up in metadata.  We have a modified Distribution that
     # keeps them for now, but looking for something better (even if it's just

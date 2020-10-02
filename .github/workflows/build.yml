@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - master
+      - main
+      - tmp-*
     tags:
       - v*
   pull_request:
@@ -32,6 +34,3 @@ jobs:
         run: make test
       - name: Lint
         run: make lint
-      - name: Coverage
-        run: codecov --token ${{ secrets.CODECOV_TOKEN }} --branch ${{ github.ref }}
-        continue-on-error: true

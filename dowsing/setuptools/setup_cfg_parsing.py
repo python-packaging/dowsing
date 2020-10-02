@@ -1,5 +1,3 @@
-import json
-import sys
 from pathlib import Path
 from typing import Any, Dict
 
@@ -18,7 +16,7 @@ def from_setup_cfg(path: Path, markers: Dict[str, Any]) -> Distribution:
 
     for field in SETUP_ARGS:
         # Until there's a better representation...
-        if not field.metadata and not field.keyword in ("setup_requires",):
+        if not field.metadata and field.keyword not in ("setup_requires",):
             continue
 
         try:
@@ -35,7 +33,3 @@ def from_setup_cfg(path: Path, markers: Dict[str, Any]) -> Distribution:
         )
         setattr(d, name, parsed)
     return d
-
-
-if __name__ == "__main__":
-    print(json.dumps(from_setup_cfg(Path(sys.argv[1]), {}).asdict(), indent=2))

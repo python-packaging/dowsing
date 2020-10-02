@@ -1,3 +1,6 @@
+"""
+For testing, dump the requirements that we find using the pep517 project.
+"""
 import json
 import sys
 
@@ -5,7 +8,7 @@ from pep517.build import compat_system
 from pep517.envbuild import BuildEnvironment, Pep517HookCaller
 
 
-def main(path):
+def main(path: str) -> None:
     system = compat_system(path)
     hooks = Pep517HookCaller(path, system["build-backend"], system.get("backend-path"))
 

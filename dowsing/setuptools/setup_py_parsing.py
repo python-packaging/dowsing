@@ -2,13 +2,10 @@
 This is mostly compatible with pkginfo's metadata classes.
 """
 
-import json
 import logging
-import sys
-import traceback
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional, Sequence, Tuple
+from typing import Any, Dict, Optional
 
 import libcst as cst
 from libcst.metadata import ParentNodeProvider, QualifiedNameProvider, ScopeProvider
@@ -17,39 +14,6 @@ from ..types import Distribution
 from .setup_and_metadata import SETUP_ARGS
 
 LOG = logging.getLogger(__name__)
-
-
-## setup(kwarg=) -> Distribution key
-# MAPPING = {
-#    "name": "name",
-#    "version": "version",
-#    "author": "author",
-#    "author_email": "author_email",
-#    "maintainer": "maintainer",
-#    "maintainer_email": "maintainer_email",
-#    "license": "license",
-#    "description": "summary",
-#    "long_description": "description",
-#    "long_description_content_type": "description_content_type",
-#    "install_requires": "requires_dist",
-#    "requires": "requires",
-#    "python_requires": "requires_python",
-#    "url": "home_page",
-#    "download_url": "download_url",
-#    "project_urls": "project_urls",
-#    "keywords": "keywords",
-#    "license": "license",
-#    "platforms": "platforms",
-#    "use_scm_version": "use_scm_version",
-#    "setup_requires": "setup_requires",
-#    "tests_require": "tests_require",
-#    "extras_require": "extras_require",
-#    "classifiers": "classifiers",
-#    "zip_safe": "zip_safe",
-#    "test_suite": "test_suite",
-#    "include_package_data": "include_package_data",
-#    "namespace_packages": "namespace_packages",
-# }
 
 
 def from_setup_py(path: Path, markers: Dict[str, Any]) -> Distribution:
@@ -99,14 +63,6 @@ def from_setup_py(path: Path, markers: Dict[str, Any]) -> Distribution:
                 setattr(d, name, v.value)
             else:
                 LOG.warning(f"Want to save {field.keyword} but is {type(v)}")
-
-        # if k in MAPPING:
-        #    if isinstance(v, Literal):
-        #        setattr(d, MAPPING[k], v.value)
-        #    else:
-        #        LOG.warning(f"Want to save {k} but is {type(v)}")
-        # else:
-        #    LOG.warning(f"Specified {k} but we don't store it")
 
     return d
 
@@ -305,26 +261,3 @@ class SetupCallAnalyzer(cst.CSTVisitor):
         else:
             # LOG.warning(f"Omit1 {type(item)!r}")
             return "??"
-
-
-def main() -> None:
-    logging.basicConfig(level=logging.DEBUG)
-    for path in sys.argv[1:]:
-        try:
-            dist = from_setup_py(Path(path), {})
-            value = {
-                "path": path,
-            }
-
-            for k in list(dist):
-                if getattr(dist, k):
-                    value[k] = getattr(dist, k)
-
-            print(json.dumps(value, indent=2,))
-        except Exception as e:
-            traceback.print_exc(file=sys.stderr)
-            print(f"Fail: {path}\n{e!r}", file=sys.stderr)
-
-
-if __name__ == "__main__":
-    main()

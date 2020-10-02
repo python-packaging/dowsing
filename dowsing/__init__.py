@@ -5,6 +5,6 @@
 # - find the cst node that setup.py uses to add a certain kwarg
 # - imports (definitely/possible[an if/catch importerror])
 
-from .api import get_requirements_for_build_sdist, get_requirements_for_build_wheel
+from .api import get_requires_for_build_sdist, get_requires_for_build_wheel
 
-__all__ = ["get_requirements_for_build_sdist", "get_requirements_for_build_wheel"]
+__all__ = ["get_requires_for_build_sdist", "get_requires_for_build_wheel"]

@@ -1,4 +1,11 @@
-import unittest
+from .api import ApiTest
+from .flit import FlitReaderTest
+from .pep517 import Pep517Test
+from .setuptools import SetuptoolsReaderTest
 
-if __name__ == "__main__":
-    unittest.main(module="dowsing.tests", verbosity=2)
+__all__ = [
+    "ApiTest",
+    "FlitReaderTest",
+    "Pep517Test",
+    "SetuptoolsReaderTest",
+]
