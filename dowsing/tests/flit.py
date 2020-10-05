@@ -41,8 +41,15 @@ build-backend = "flit_core.buildapi"
 name = "Name"
 module = "foo"
 requires = ["abc", "def"]
+
+[tool.flit.metadata.urls]
+Foo = "https://"
 """
             )
+            (dp / "foo").mkdir()
+            (dp / "foo" / "tests").mkdir()
+            (dp / "foo" / "__init__.py").write_text("")
+            (dp / "foo" / "tests" / "__init__.py").write_text("")
 
             r = FlitReader(dp)
             # Notably these do not include flit itself; that's handled by
@@ -52,6 +59,12 @@ requires = ["abc", "def"]
             md = r.get_metadata()
             self.assertEqual("Name", md.name)
             self.assertEqual(
-                {"metadata_version": "2.1", "name": "Name", "requires": ["abc", "def"]},
+                {
+                    "metadata_version": "2.1",
+                    "name": "Name",
+                    "packages": ["foo", "foo.tests"],
+                    "requires_dist": ["abc", "def"],
+                    "project_urls": {"Foo": "https://"},
+                },
                 md.asdict(),
             )

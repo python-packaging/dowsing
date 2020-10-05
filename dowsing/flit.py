@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Sequence
 
 import tomlkit
+from setuptools import find_packages
 
 from .types import BaseReader, Distribution
 
@@ -22,11 +23,31 @@ class FlitReader(BaseReader):
 
         d = Distribution()
         d.metadata_version = "2.1"
+        d.project_urls = {}
 
         for k, v in doc["tool"]["flit"]["metadata"].items():
+            # TODO description-file -> long_description
+            # TODO home-page -> urls
+            # TODO requires -> requires_dist
+            # TODO tool.flit.metadata.urls
+            if k == "home-page":
+                d.project_urls["Homepage"] = v
+                continue
+            elif k == "module":
+                k = "packages"
+                v = find_packages(self.path.as_posix(), include=(f"{v}.*"))
+            elif k == "description-file":
+                k = "description"
+                v = f"file: {v}"
+            elif k == "requires":
+                k = "requires_dist"
+
             k2 = k.replace("-", "_")
             if k2 in d:
                 setattr(d, k2, v)
+
+        for k, v in doc["tool"]["flit"]["metadata"].get("urls", {}).items():
+            d.project_urls[k] = v
 
         # TODO extras-require
 
