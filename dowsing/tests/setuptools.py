@@ -4,14 +4,8 @@ from pathlib import Path
 import volatile
 
 from dowsing.setuptools import SetuptoolsReader
-from dowsing.setuptools.types import (
-    BoolWriter,
-    DictWriter,
-    ListCommaWriter,
-    ListCommaWriterCompat,
-    ListSemiWriter,
-    StrWriter,
-)
+from dowsing.setuptools.setup_py_parsing import from_setup_py
+from dowsing.types import Distribution
 
 
 class SetuptoolsReaderTest(unittest.TestCase):
@@ -51,26 +45,25 @@ setup(name=the_name, install_requires=["abc"], setup_requires=["def"])
                 ("setuptools", "wheel", "def"), r.get_requires_for_build_wheel()
             )
 
-    def test_writer_classes_roundtrip_str(self) -> None:
-        s = "abc"
-        inst = StrWriter()
-        self.assertEqual(s, inst.from_ini(inst.to_ini(s)))
+    def _read(self, data: str) -> Distribution:
+        with volatile.dir() as d:
+            sp = Path(d, "setup.py")
+            sp.write_text(data)
+            return from_setup_py(Path(d), {})
 
-    def test_writer_classes_roundtrip_lists(self) -> None:
-        lst = ["a", "bc"]
-        inst = ListSemiWriter()
-        self.assertEqual(lst, inst.from_ini(inst.to_ini(lst)))
-        inst2 = ListCommaWriter()
-        self.assertEqual(lst, inst2.from_ini(inst2.to_ini(lst)))
-        inst3 = ListCommaWriterCompat()
-        self.assertEqual(lst, inst3.from_ini(inst3.to_ini(lst)))
-
-    def test_writer_classes_roundtrip_dict(self) -> None:
-        d = {"a": "bc", "d": "ef"}
-        inst = DictWriter()
-        self.assertEqual(d, inst.from_ini(inst.to_ini(d)))
-
-    def test_writer_classes_roundtrip_bool(self) -> None:
-        for b in (True, False):
-            inst = BoolWriter()
-            self.assertEqual(b, inst.from_ini(inst.to_ini(b)))
+    def test_smoke(self) -> None:
+        d = self._read(
+            """\
+from setuptools import setup
+setup(
+    name="foo",
+    version="0.1",
+    classifiers=["CLASSIFIER"],
+    install_requires=["abc"],
+)
+"""
+        )
+        self.assertEqual("foo", d.name)
+        self.assertEqual("0.1", d.version)
+        self.assertEqual(["CLASSIFIER"], d.classifiers)
+        self.assertEqual(["abc"], d.requires_dist)

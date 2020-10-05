@@ -12,7 +12,7 @@ venv:
 
 .PHONY: setup
 setup:
-	python -m pip install -Ur requirements-dev.txt
+	python -m pip install -U -r requirements.txt -r requirements-dev.txt
 
 .PHONY: test
 test:

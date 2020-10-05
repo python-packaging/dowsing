@@ -45,20 +45,30 @@ class Distribution(pkginfo.distribution.Distribution):  # type: ignore
     zip_safe: Optional[bool] = None
     include_package_data: Optional[bool] = None
     test_suite: str = ""
+    test_loader: str = ""
     namespace_packages: Sequence[str] = ()
+    package_data: Dict[str, Sequence[str]] = {}
+    packages: Sequence[str] = ()
+    package_dir: Optional[str] = None
+    entry_points: Dict[str, Sequence[str]] = {}
 
     def _getHeaderAttrs(self) -> Sequence[Tuple[str, str, bool]]:
         # Until I invent a metadata version to include this, do so
         # unconditionally.
         return tuple(super()._getHeaderAttrs()) + (
-            ("Setup-Requires", "setup_requires", True),
-            ("Tests-Require", "tests_require", True),
+            ("X-Setup-Requires", "setup_requires", True),
+            ("X-Tests-Require", "tests_require", True),
             ("???", "extras_require", False),
-            ("Use-SCM-Version", "use_scm_version", False),
-            ("Zip-Safe", "zip_safe", False),
-            ("Test-Suite", "test_suite", False),
-            ("Include-Package-Data", "include_package_data", False),
-            ("Namespace-Package", "namespace_packages", True),
+            ("X-Use-SCM-Version", "use_scm_version", False),
+            ("x-Zip-Safe", "zip_safe", False),
+            ("X-Test-Suite", "test_suite", False),
+            ("X-Test-Loader", "test_loader", False),
+            ("X-Include-Package-Data", "include_package_data", False),
+            ("X-Namespace-Package", "namespace_packages", True),
+            ("X-Package-Data", "package_data", False),
+            ("X-Packages", "packages", True),
+            ("X-Package-Dir", "package_dir", False),
+            ("X-Entry-Points", "entry_points", False),
         )
 
     def asdict(self) -> Dict[str, Any]:

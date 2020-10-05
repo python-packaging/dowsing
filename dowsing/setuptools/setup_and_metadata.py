@@ -33,7 +33,12 @@ SETUP_ARGS = [
     # but doesn't really tell you what they do or what the metadata keys are or
     # what metadata version they correspond to.
     ConfigField("name", SetupCfg("metadata", "name"), Metadata("Name")),
-    ConfigField("version", SetupCfg("metadata", "version"), Metadata("Version")),
+    ConfigField(
+        "version",
+        SetupCfg("metadata", "version"),
+        Metadata("Version"),
+        sample_value="1.5.1",
+    ),
     ConfigField("author", SetupCfg("metadata", "author"), Metadata("Author")),
     ConfigField(
         "author_email", SetupCfg("metadata", "author_email"), Metadata("Author-email"),
@@ -54,6 +59,7 @@ SETUP_ARGS = [
         "keywords",
         SetupCfg("metadata", "keywords", writer_cls=ListCommaWriterCompat),
         Metadata("Keywords"),
+        sample_value=["abc", "def"],
     ),  # but not repeated
     # platforms
     # fullname
@@ -67,7 +73,11 @@ SETUP_ARGS = [
         "classifiers",
         SetupCfg("metadata", "classifiers", writer_cls=ListSemiWriter),
         Metadata("Classifier", repeated=True),
-        sample_value=None,
+        sample_value=[
+            "License :: OSI Approved :: MIT License",
+            "Intended Audience :: Developers",
+        ],
+        distribution_key="classifiers",
     ),
     # download_url
     # Metadata 1.1
@@ -94,9 +104,9 @@ SETUP_ARGS = [
         "project_urls",
         SetupCfg("metadata", "project_urls", writer_cls=DictWriter),
         Metadata("Project-URL"),
-        sample_value=None,  # {"Bugtracker": "http://example.com"},
+        sample_value={"Bugtracker": "http://example.com"},
+        distribution_key="project_urls",
     ),
-    # requires_dist
     # provides_dist (rarely used)
     # obsoletes_dist (rarely used)
     # Metadata 2.1
@@ -113,27 +123,29 @@ SETUP_ARGS = [
     ConfigField(
         "zip_safe",
         SetupCfg("options", "zip_safe", writer_cls=BoolWriter),
-        sample_value=None,
+        sample_value=True,
     ),
     ConfigField(
         "setup_requires",
         SetupCfg("options", "setup_requires", writer_cls=ListSemiWriter),
-        sample_value=None,
+        sample_value=["setuptools"],
     ),
     ConfigField(
         "install_requires",
-        SetupCfg("options", "install_requires", writer_cls=ListSemiWriter),
-        sample_value=None,
+        SetupCfg("options", "install_requires", writer_cls=ListCommaWriter),
+        Metadata("Requires-Dist"),
+        sample_value=["a", "b ; python_version < '3'"],
+        distribution_key="requires_dist",
     ),
     ConfigField(
         "tests_require",
         SetupCfg("options", "tests_require", writer_cls=ListSemiWriter),
-        sample_value=None,
+        sample_value=["pytest"],
     ),
     ConfigField(
         "include_package_data",
         SetupCfg("options", "include_package_data", writer_cls=BoolWriter),
-        sample_value=None,  # True,
+        sample_value=True,
     ),
     #
     ConfigField(
@@ -155,7 +167,7 @@ SETUP_ARGS = [
     ConfigField(
         "packages",
         SetupCfg("options", "packages", writer_cls=ListCommaWriter),
-        sample_value=None,
+        sample_value=["a", "b"],
     ),
     ConfigField(
         "package_dir",
@@ -184,8 +196,13 @@ SETUP_ARGS = [
         SetupCfg("options.data_files", "UNUSED", writer_cls=SectionWriter),
         sample_value=None,
     ),
+    ConfigField(
+        "entry_points",
+        SetupCfg("options.entry_points", "UNUSED", writer_cls=SectionWriter),
+        sample_value=None,
+    ),
     #
     # Documented, but not in the table...
-    ConfigField("test_suite", SetupCfg("options", "test_suite"), sample_value=None,),
-    ConfigField("test_loader", SetupCfg("options", "test_loader"), sample_value=None,),
+    ConfigField("test_suite", SetupCfg("options", "test_suite")),
+    ConfigField("test_loader", SetupCfg("options", "test_loader")),
 ]

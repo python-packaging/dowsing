@@ -24,11 +24,11 @@ class ListCommaWriter(BaseWriter):
     def to_ini(self, value: List[str]) -> str:
         if not value:
             return ""
-        return "".join(f"\n{k}" for k in value)
+        return "".join(f"\n  {k}" for k in value)
 
     def from_ini(self, value: str) -> List[str]:
         # TODO, on all of these, handle other separators, \r, and stripping
-        return value.strip().split("\n")
+        return [line.strip() for line in value.strip().split("\n")]
 
 
 class ListCommaWriterCompat(BaseWriter):
@@ -37,20 +37,20 @@ class ListCommaWriterCompat(BaseWriter):
             return ""
         if isinstance(value, str):
             value = [value]
-        return "".join(f"\n{k}" for k in value)
+        return "".join(f"\n  {k}" for k in value)
 
     def from_ini(self, value: str) -> List[str]:
-        return value.strip().split("\n")
+        return [line.strip() for line in value.strip().split("\n")]
 
 
 class ListSemiWriter(BaseWriter):
     def to_ini(self, value: List[str]) -> str:
         if not value:
             return ""
-        return "".join(f"\n{k}" for k in value)
+        return "".join(f"\n  {k}" for k in value)
 
     def from_ini(self, value: str) -> List[str]:
-        return value.strip().split("\n")
+        return [line.strip() for line in value.strip().split("\n")]
 
 
 # This class is also specialcased
@@ -59,6 +59,9 @@ class SectionWriter(BaseWriter):
         if not value:
             return ""
         return "".join(f"\n{k}" for k in value)
+
+    def from_ini_section(self, section: Dict[str, str]) -> Dict[str, List[str]]:
+        return {k: section[k].strip().split("\n") for k in section.keys()}
 
 
 class BoolWriter(BaseWriter):
@@ -74,7 +77,7 @@ class DictWriter(BaseWriter):
     def to_ini(self, value: Dict[str, str]) -> str:
         if not value:
             return ""
-        return "".join(f"\n{k}={v}" for k, v in value.items())
+        return "".join(f"\n  {k}={v}" for k, v in value.items())
 
     def from_ini(self, value: str) -> Dict[str, str]:
         d = {}
@@ -128,3 +131,15 @@ class ConfigField:
     # Not all kwargs end up in metadata.  We have a modified Distribution that
     # keeps them for now, but looking for something better (even if it's just
     # using ConfigField objects as events in a stream).
+    distribution_key: Optional[str] = None
+
+    def get_distribution_key(self) -> str:
+        # Returns the member name of pkginfo.Distribution (or our subclasS)
+        if self.metadata is not None:
+            return (
+                (self.distribution_key or self.metadata.key or self.keyword)
+                .replace("-", "_")
+                .lower()
+            )
+        else:
+            return (self.distribution_key or self.keyword).replace("-", "_").lower()

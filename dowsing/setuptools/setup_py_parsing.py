@@ -48,15 +48,10 @@ def from_setup_py(path: Path, markers: Dict[str, Any]) -> Distribution:
         raise SyntaxError("No simple setup call found")
 
     for field in SETUP_ARGS:
-        # Until there's a better representation...
-        if not field.metadata and field.keyword not in ("setup_requires",):
+        name = field.get_distribution_key()
+        if not hasattr(d, name):
             continue
 
-        name = (
-            (field.metadata.key if field.metadata else field.keyword)
-            .lower()
-            .replace("-", "_")
-        )
         if field.keyword in analyzer.saved_args:
             v = analyzer.saved_args[field.keyword]
             if isinstance(v, Literal):

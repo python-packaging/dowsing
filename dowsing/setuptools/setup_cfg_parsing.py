@@ -5,6 +5,7 @@ import imperfect
 
 from ..types import Distribution
 from .setup_and_metadata import SETUP_ARGS
+from .types import SectionWriter
 
 
 def from_setup_cfg(path: Path, markers: Dict[str, Any]) -> Distribution:
@@ -15,21 +16,24 @@ def from_setup_cfg(path: Path, markers: Dict[str, Any]) -> Distribution:
     d.metadata_version = "2.1"
 
     for field in SETUP_ARGS:
-        # Until there's a better representation...
-        if not field.metadata and field.keyword not in ("setup_requires",):
+        name = field.get_distribution_key()
+        if not hasattr(d, name):
             continue
 
-        try:
-            raw_data = cfg[field.cfg.section][field.cfg.key]
-        except KeyError:
-            continue
         cls = field.cfg.writer_cls
-        parsed = cls().from_ini(raw_data)
+        if cls is SectionWriter:
+            try:
+                raw_section_data = cfg[field.cfg.section]
+            except KeyError:
+                continue
+            # ConfigSection behaves like a Dict[str, str] so this is fine
+            parsed = SectionWriter().from_ini_section(raw_section_data)  # type: ignore
+        else:
+            try:
+                raw_data = cfg[field.cfg.section][field.cfg.key]
+            except KeyError:
+                continue
+            parsed = cls().from_ini(raw_data)
 
-        name = (
-            (field.metadata.key if field.metadata else field.keyword)
-            .lower()
-            .replace("-", "_")
-        )
         setattr(d, name, parsed)
     return d
