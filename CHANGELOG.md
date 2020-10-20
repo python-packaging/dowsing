@@ -1,3 +1,10 @@
+## v0.7.0
+
+* Adds Poetry support
+* Addd Maturin support
+* Adds `packages_dict` and better `packages` support across supported backends
+* Allows `setup.cfg` fields to use dashes
+
 ## v0.6.0
 
 * Fix many bugs in Flit and Setuptools support, better test coverage.
