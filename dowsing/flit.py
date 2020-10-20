@@ -36,6 +36,7 @@ class FlitReader(BaseReader):
             elif k == "module":
                 k = "packages"
                 v = find_packages(self.path.as_posix(), include=(f"{v}.*"))
+                d.packages_dict = {i: i.replace(".", "/") for i in v}
             elif k == "description-file":
                 k = "description"
                 v = f"file: {v}"
