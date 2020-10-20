@@ -79,6 +79,13 @@ class Literal:
     cst_node: Optional[cst.CSTNode]
 
 
+@dataclass
+class FindPackages:
+    where: Any = None
+    exclude: Any = None
+    include: Any = None
+
+
 class FileReference:
     def __init__(self, filename: str) -> None:
         self.filename = filename
@@ -166,6 +173,8 @@ class SetupCallAnalyzer(cst.CSTVisitor):
     PRETEND_ARGV = ["setup.py", "bdist_wheel"]
 
     def evaluate_in_scope(self, item: cst.CSTNode, scope: Any) -> Any:
+        qnames = self.get_metadata(QualifiedNameProvider, item)
+
         if isinstance(item, cst.SimpleString):
             return item.evaluated_value
         # TODO int/float/etc
@@ -221,6 +230,25 @@ class SetupCallAnalyzer(cst.CSTVisitor):
                 return tuple(lst)
             else:
                 return lst
+        elif isinstance(item, cst.Call) and any(
+            q.name == "setuptools.find_packages" for q in qnames
+        ):
+            default_args = [".", (), ("*",)]
+            args = default_args.copy()
+
+            names = ("where", "exclude", "include")
+            i = 0
+            for arg in item.args:
+                if isinstance(arg.keyword, cst.Name):
+                    args[names.index(arg.keyword.value)] = self.evaluate_in_scope(
+                        arg.value, scope
+                    )
+                else:
+                    args[i] = self.evaluate_in_scope(arg.value, scope)
+                    i += 1
+
+            # TODO clear ones that are still default
+            return FindPackages(*args)
         elif (
             isinstance(item, cst.Call)
             and isinstance(item.func, cst.Name)

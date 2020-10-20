@@ -2,7 +2,7 @@ import importlib
 import json
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple, Type
+from typing import Any, Dict, List, Tuple, Type
 
 import tomlkit
 
@@ -64,13 +64,19 @@ def get_metadata(path: Path) -> Distribution:
     return backend.get_metadata()
 
 
+def _default(obj: Any) -> Any:
+    if obj.__class__.__name__ == "FindPackages":
+        return f"FindPackages({obj.where!r}, {obj.exclude!r}, {obj.include!r}"
+    raise TypeError(obj)
+
+
 def main(path: Path) -> None:
     d = {
         "get_requires_for_build_sdist": get_requires_for_build_sdist(path),
         "get_requires_for_build_wheel": get_requires_for_build_wheel(path),
         "get_metadata": get_metadata(path).asdict(),
     }
-    print(json.dumps(d))
+    print(json.dumps(d, default=_default))
 
 
 if __name__ == "__main__":

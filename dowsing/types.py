@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, Optional, Sequence, Tuple
+from typing import Any, Dict, Mapping, Optional, Sequence, Tuple
 
 import pkginfo.distribution
 
@@ -49,8 +49,12 @@ class Distribution(pkginfo.distribution.Distribution):  # type: ignore
     namespace_packages: Sequence[str] = ()
     package_data: Dict[str, Sequence[str]] = {}
     packages: Sequence[str] = ()
-    package_dir: Optional[str] = None
+    package_dir: Mapping[str, str] = {}
+    packages_dict: Mapping[str, str] = {}
     entry_points: Dict[str, Sequence[str]] = {}
+    find_packages_where: str = "."
+    find_packages_exclude: Sequence[str] = ()
+    find_packages_include: Sequence[str] = ("*",)
 
     def _getHeaderAttrs(self) -> Sequence[Tuple[str, str, bool]]:
         # Until I invent a metadata version to include this, do so
@@ -68,6 +72,7 @@ class Distribution(pkginfo.distribution.Distribution):  # type: ignore
             ("X-Package-Data", "package_data", False),
             ("X-Packages", "packages", True),
             ("X-Package-Dir", "package_dir", False),
+            ("X-Packages-Dict", "packages_dict", False),
             ("X-Entry-Points", "entry_points", False),
         )
 

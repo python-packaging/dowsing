@@ -205,4 +205,21 @@ SETUP_ARGS = [
     # Documented, but not in the table...
     ConfigField("test_suite", SetupCfg("options", "test_suite")),
     ConfigField("test_loader", SetupCfg("options", "test_loader")),
+    #
+    # FindPackages
+    ConfigField(
+        "find_packages_where",
+        SetupCfg("options.packages.find", "where"),
+        sample_value=None,
+    ),
+    ConfigField(
+        "find_packages_exclude",
+        SetupCfg("options.packages.find", "exclude", writer_cls=ListCommaWriter),
+        sample_value=None,
+    ),
+    ConfigField(
+        "find_packages_include",
+        SetupCfg("options.packages.find", "include", writer_cls=ListCommaWriter),
+        sample_value=None,
+    ),
 ]
