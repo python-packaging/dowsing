@@ -60,18 +60,21 @@ class SetuptoolsReader(BaseReader):
                 raise Exception("Should have stopped by now")
 
             d1.packages_dict = {}  # Break shared class-level dict
+
+            # The following as_posix calls are necessary for Windows, but don't
+            # hurt elsewhere.
             if isinstance(d1.packages, FindPackages):
                 # This encodes a lot of sketchy logic, and deserves more test cases,
                 # plus some around py_modules
                 for p in find_packages(
-                    self.path / d1.packages.where,
+                    (self.path / d1.packages.where).as_posix(),
                     d1.packages.exclude,
                     d1.packages.include,
                 ):
                     d1.packages_dict[p] = mangle(p)
             elif d1.packages == ["find:"]:
                 for p in find_packages(
-                    self.path / d1.find_packages_where,
+                    (self.path / d1.find_packages_where).as_posix(),
                     d1.find_packages_exclude,
                     d1.find_packages_include,
                 ):
