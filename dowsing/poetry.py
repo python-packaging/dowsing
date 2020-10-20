@@ -1,3 +1,4 @@
+import posixpath
 from pathlib import Path
 from typing import Sequence
 
@@ -36,29 +37,43 @@ class PoetryReader(BaseReader):
         d = Distribution()
         d.metadata_version = "2.1"
         d.project_urls = {}
+        d.entry_points = {}
         d.requires_dist = []
         d.packages = []
+        d.packages_dict = {}
 
         for k, v in doc["tool"]["poetry"].items():
             if k in ("homepage", "repository", "documentation"):
                 d.project_urls[k] = v
             elif k == "packages":
+                # TODO improve and add tests; this works for tf2_utils and
+                # poetry itself but include can be a glob and there are excludes
                 for x in v:
-                    d.packages.extend(
-                        p
-                        for p in find_packages(self.path.as_posix())
-                        if p == x["include"] or p.startswith(f"{x['include']}.")
-                    )
+                    f = x.get("from", ".")
+                    for p in find_packages((self.path / f).as_posix()):
+                        if p == x["include"] or p.startswith(f"{x['include']}."):
+                            d.packages_dict[p] = posixpath.normpath(
+                                posixpath.join(f, p.replace(".", "/"))
+                            )
+                            d.packages.append(p)
             elif k in METADATA_MAPPING:
                 setattr(d, METADATA_MAPPING[k], v)
+
+        if not d.packages:
+            for p in find_packages(self.path.as_posix()):
+                d.packages_dict[p] = p.replace(".", "/")
+                d.packages.append(p)
 
         for k, v in doc["tool"]["poetry"].get("dependencies", {}).items():
             if k == "python":
                 pass  # TODO translate to requires_python
             else:
-                d.requires_dist.append(k)
+                d.requires_dist.append(k)  # TODO something with version
 
         for k, v in doc["tool"]["poetry"].get("urls", {}).items():
             d.project_urls[k] = v
+
+        for k, v in doc["tool"]["poetry"].get("scripts", {}).items():
+            d.entry_points[k] = v
 
         return d

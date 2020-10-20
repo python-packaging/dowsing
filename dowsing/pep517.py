@@ -13,6 +13,7 @@ KNOWN_BACKENDS: Dict[str, str] = {
     "setuptools.build_meta": "dowsing.setuptools:SetuptoolsReader",
     "flit_core.buildapi": "dowsing.flit:FlitReader",
     "poetry.core.masonry.api": "dowsing.poetry:PoetryReader",
+    "poetry.masonry.api": "dowsing.poetry:PoetryReader",
 }
 
 
