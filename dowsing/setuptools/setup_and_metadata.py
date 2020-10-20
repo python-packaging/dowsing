@@ -94,7 +94,7 @@ SETUP_ARGS = [
     # Metadata 1.2, not at all supported by distutils
     ConfigField(
         "python_requires",
-        SetupCfg("options", "python_requires"),
+        SetupCfg("options", "python_requires"),  # also requires_python :/
         Metadata("Requires-Python"),
         sample_value="<4.0",
     ),

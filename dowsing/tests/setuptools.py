@@ -28,6 +28,24 @@ setup_requires = def
                 ("setuptools", "wheel", "def"), r.get_requires_for_build_wheel()
             )
 
+    def test_setup_cfg_dash_normalization(self) -> None:
+        # I can't find documentation for this, but e.g. auditwheel 3.2.0 uses
+        # dashes instead of underscores and it works.
+        with volatile.dir() as d:
+            dp = Path(d)
+            (dp / "setup.cfg").write_text(
+                """\
+[metadata]
+name = foo
+author = Foo
+author-email = foo@example.com
+"""
+            )
+
+            r = SetuptoolsReader(dp)
+            md = r.get_metadata()
+            self.assertEqual("foo@example.com", md.author_email)
+
     def test_setup_py(self) -> None:
         with volatile.dir() as d:
             dp = Path(d)

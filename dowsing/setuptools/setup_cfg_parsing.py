@@ -30,7 +30,12 @@ def from_setup_cfg(path: Path, markers: Dict[str, Any]) -> Distribution:
             parsed = SectionWriter().from_ini_section(raw_section_data)  # type: ignore
         else:
             try:
-                raw_data = cfg[field.cfg.section][field.cfg.key]
+                # All fields are defined as underscore, but it appears
+                # setuptools normalizes so dashes are ok too.
+                key = field.cfg.key
+                if key not in cfg[field.cfg.section]:
+                    key = key.replace("_", "-")
+                raw_data = cfg[field.cfg.section][key]
             except KeyError:
                 continue
             parsed = cls().from_ini(raw_data)
