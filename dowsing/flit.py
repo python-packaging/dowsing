@@ -24,6 +24,7 @@ class FlitReader(BaseReader):
         d = Distribution()
         d.metadata_version = "2.1"
         d.project_urls = {}
+        d.entry_points = {}
 
         for k, v in doc["tool"]["flit"]["metadata"].items():
             # TODO description-file -> long_description
@@ -50,7 +51,11 @@ class FlitReader(BaseReader):
         for k, v in doc["tool"]["flit"]["metadata"].get("urls", {}).items():
             d.project_urls[k] = v
 
+        for k, v in doc["tool"]["flit"].get("scripts", {}).items():
+            d.entry_points[k] = v
+
         # TODO extras-require
+        # TODO distutils commands (e.g. pex 2.1.19)
 
         return d
 
