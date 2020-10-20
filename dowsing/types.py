@@ -1,4 +1,5 @@
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, Dict, Mapping, Optional, Sequence, Tuple
 
 import pkginfo.distribution
@@ -34,24 +35,26 @@ class BaseReader:
         raise NotImplementedError
 
 
+DEFAULT_EMPTY_DICT: Mapping[str, Any] = MappingProxyType({})
+
 # TODO: pkginfo isn't typed, and is doing to require a yak-shave to send a PR
 # since it's on launchpad.
 class Distribution(pkginfo.distribution.Distribution):  # type: ignore
     # These are not actually part of the metadata, see PEP 566
     setup_requires: Sequence[str] = ()
     tests_require: Sequence[str] = ()
-    extras_require: Dict[str, Sequence[str]] = {}
+    extras_require: Mapping[str, Sequence[str]] = DEFAULT_EMPTY_DICT
     use_scm_version: Optional[bool] = None
     zip_safe: Optional[bool] = None
     include_package_data: Optional[bool] = None
     test_suite: str = ""
     test_loader: str = ""
     namespace_packages: Sequence[str] = ()
-    package_data: Dict[str, Sequence[str]] = {}
+    package_data: Mapping[str, Sequence[str]] = DEFAULT_EMPTY_DICT
     packages: Sequence[str] = ()
-    package_dir: Mapping[str, str] = {}
-    packages_dict: Mapping[str, str] = {}
-    entry_points: Dict[str, Sequence[str]] = {}
+    package_dir: Mapping[str, str] = DEFAULT_EMPTY_DICT
+    packages_dict: Mapping[str, str] = DEFAULT_EMPTY_DICT
+    entry_points: Mapping[str, Sequence[str]] = DEFAULT_EMPTY_DICT
     find_packages_where: str = "."
     find_packages_exclude: Sequence[str] = ()
     find_packages_include: Sequence[str] = ("*",)
