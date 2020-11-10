@@ -1,3 +1,8 @@
+## v0.8.0
+
+* Adds `Distribution.source_mapping`
+* Enable gh actions on 3.9
+
 ## v0.7.0
 
 * Adds Poetry support
