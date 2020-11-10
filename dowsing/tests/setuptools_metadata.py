@@ -22,7 +22,8 @@ def egg_info(files: Dict[str, str]) -> Tuple[Message, Distribution]:
     # and whether that gives a Distribution that knows setuptools-only options
     with tempfile.TemporaryDirectory() as d:
         for relname, contents in files.items():
-            (Path(d) / relname).write_text(contents)
+            Path(d, relname).parent.mkdir(exist_ok=True, parents=True)
+            Path(d, relname).write_text(contents)
 
         try:
             cwd = os.getcwd()
@@ -61,6 +62,8 @@ class SetupArgsTest(unittest.TestCase):
                     {
                         "setup.py": "from setuptools import setup\n"
                         f"setup({field.keyword}={foo!r})\n",
+                        "a/__init__.py": "",
+                        "b/__init__.py": "",
                     }
                 )
 
@@ -70,6 +73,8 @@ class SetupArgsTest(unittest.TestCase):
                         "setup.cfg": f"[{field.cfg.section}]\n"
                         f"{field.cfg.key} = {cfg_format_foo}\n",
                         "setup.py": "from setuptools import setup\n" "setup()\n",
+                        "a/__init__.py": "",
+                        "b/__init__.py": "",
                     }
                 )
 

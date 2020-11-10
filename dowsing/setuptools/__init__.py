@@ -84,6 +84,7 @@ class SetuptoolsReader(BaseReader):
                 for p in d1.packages:
                     d1.packages_dict[p] = mangle(p)
 
+        d1.source_mapping = d1._source_mapping(self.path)
         return d1
 
     def _get_requires(self) -> Tuple[str, ...]:

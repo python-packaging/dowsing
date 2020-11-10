@@ -157,6 +157,13 @@ setup(
         )
         self.assertEqual(d.packages, FindPackages(".", ("pkg.sub",), ("*",)))
         self.assertEqual(d.packages_dict, {"pkg": "pkg", "pkg.tests": "pkg/tests"})
+        self.assertEqual(
+            d.source_mapping,
+            {
+                "pkg/__init__.py": "pkg/__init__.py",
+                "pkg/tests/__init__.py": "pkg/tests/__init__.py",
+            },
+        )
 
     def test_packages_find_packages_call_package_dir3(self) -> None:
         d = self._read(
@@ -170,6 +177,13 @@ setup(
         )
         self.assertEqual(d.packages, FindPackages("pkg", (), ("*",)))
         self.assertEqual(d.packages_dict, {"sub": "pkg/sub", "tests": "pkg/tests"})
+        self.assertEqual(
+            d.source_mapping,
+            {
+                "sub/__init__.py": "pkg/sub/__init__.py",
+                "tests/__init__.py": "pkg/tests/__init__.py",
+            },
+        )
 
     def test_packages_find_packages_include(self) -> None:
         # This is weird behavior but documented.
@@ -183,3 +197,26 @@ setup(
         )
         self.assertEqual(d.packages, FindPackages(".", (), ("pkg",)))
         self.assertEqual(d.packages_dict, {"pkg": "pkg"})
+        self.assertEqual(d.source_mapping, {"pkg/__init__.py": "pkg/__init__.py"})
+
+    def test_py_modules(self) -> None:
+        d = self._read(
+            """\
+from setuptools import setup, find_packages
+setup(
+    py_modules=["a", "b"],
+)
+        """
+        )
+        self.assertEqual(d.source_mapping, {"a.py": "a.py", "b.py": "b.py"})
+
+    def test_invalid_packages(self) -> None:
+        d = self._read(
+            """\
+from setuptools import setup, find_packages
+setup(
+    packages = ["zzz"],
+)
+        """
+        )
+        self.assertEqual(d.source_mapping, None)

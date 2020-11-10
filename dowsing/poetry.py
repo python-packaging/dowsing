@@ -76,4 +76,5 @@ class PoetryReader(BaseReader):
         for k, v in doc["tool"]["poetry"].get("scripts", {}).items():
             d.entry_points[k] = v
 
+        d.source_mapping = d._source_mapping(self.path)
         return d

@@ -57,6 +57,7 @@ class FlitReader(BaseReader):
         # TODO extras-require
         # TODO distutils commands (e.g. pex 2.1.19)
 
+        d.source_mapping = d._source_mapping(self.path)
         return d
 
     def _get_requires(self) -> Sequence[str]:
