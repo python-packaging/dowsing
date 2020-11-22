@@ -133,7 +133,7 @@ SETUP_ARGS = [
     ConfigField(
         "install_requires",
         SetupCfg("options", "install_requires", writer_cls=ListCommaWriter),
-        Metadata("Requires-Dist"),
+        Metadata("Requires-Dist", repeated=True),
         sample_value=["a", "b ; python_version < '3'"],
         distribution_key="requires_dist",
     ),
