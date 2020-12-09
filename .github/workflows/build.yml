@@ -58,4 +58,4 @@ jobs:
           echo 'importall>=0.2.1' > importall.txt
       - name: Check Deps
         run: |
-          python -m pessimist --requirements=importall.txt --fast -c 'importall --root=. --exclude=tests,_demo_pep517.py dowsing' .
+          python -m pessimist --requirements=importall.txt --fast -c 'importall --root=. --exclude=tests,_demo_pep517.py,check_source_mapping.py dowsing' .
