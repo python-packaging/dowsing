@@ -1,6 +1,6 @@
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any, Dict, Mapping, Optional, Sequence, Tuple
+from typing import Any, Dict, Mapping, Optional, Sequence, Set, Tuple
 
 import pkginfo.distribution
 
@@ -98,15 +98,42 @@ class Distribution(pkginfo.distribution.Distribution):  # type: ignore
         d: Dict[str, str] = {}
 
         for m in self.py_modules:
+            if m == "?":
+                return None
             d[f"{m}.py"] = f"{m}.py"
 
         try:
-            # k = foo.bar, v = src/foo/bar
-            for k, v in self.packages_dict.items():
+            # This commented block is approximately correct for setuptools, but
+            # does not understand package_data.
+            # # k = foo.bar, v = src/foo/bar
+            # for k, v in self.packages_dict.items():
+            #     kp = k.replace(".", "/")
+            #     for item in (root / v).iterdir():
+            #         if item.is_file():
+            #             d[f"{kp}/{item.name}"] = f"{v}/{item.name}"
+
+            # Instead, this behavior is more like flit/poetry by including all
+            # files under package dirs, in a way that's mostly compatible with
+            # setuptools setting package_dir dicts.  This tends to include
+            # in-package tests, which is a behavior I like, but I'm sure some
+            # people won't.
+
+            seen_paths: Set[Path] = set()
+
+            # Longest source path first, will "own" the item
+            for k, v in sorted(
+                self.packages_dict.items(), key=lambda x: len(x[1]), reverse=True
+            ):
                 kp = k.replace(".", "/")
-                for item in (root / v).iterdir():
+                vp = root / v
+                for item in vp.rglob("*"):
+                    if item in seen_paths:
+                        continue
+                    seen_paths.add(item)
                     if item.is_file():
-                        d[f"{kp}/{item.name}"] = f"{v}/{item.name}"
+                        rel = item.relative_to(vp)
+                        d[(kp / rel).as_posix()] = (v / rel).as_posix()
+
         except IOError:
             return None
 

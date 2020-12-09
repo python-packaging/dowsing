@@ -57,7 +57,10 @@ class SetuptoolsReader(BaseReader):
                 for x, rest in _prefixes(package):
                     if x in package_dir:
                         return posixpath.normpath(posixpath.join(package_dir[x], rest))
-                raise Exception("Should have stopped by now")
+
+                # Some projects seem to set only a partial package_dir, but then
+                # use find_packages which wants to include some outside.
+                return package
 
             d1.packages_dict = {}  # Break shared class-level dict
 

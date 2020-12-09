@@ -161,6 +161,8 @@ setup(
             d.source_mapping,
             {
                 "pkg/__init__.py": "pkg/__init__.py",
+                # TODO this line should not be here as it's excluded
+                "pkg/sub/__init__.py": "pkg/sub/__init__.py",
                 "pkg/tests/__init__.py": "pkg/tests/__init__.py",
             },
         )
@@ -197,7 +199,16 @@ setup(
         )
         self.assertEqual(d.packages, FindPackages(".", (), ("pkg",)))
         self.assertEqual(d.packages_dict, {"pkg": "pkg"})
-        self.assertEqual(d.source_mapping, {"pkg/__init__.py": "pkg/__init__.py"})
+        # TODO strict interpretation should be this commented line
+        # self.assertEqual(d.source_mapping, {"pkg/__init__.py": "pkg/__init__.py"})
+        self.assertEqual(
+            d.source_mapping,
+            {
+                "pkg/__init__.py": "pkg/__init__.py",
+                "pkg/sub/__init__.py": "pkg/sub/__init__.py",
+                "pkg/tests/__init__.py": "pkg/tests/__init__.py",
+            },
+        )
 
     def test_py_modules(self) -> None:
         d = self._read(
@@ -219,4 +230,5 @@ setup(
 )
         """
         )
-        self.assertEqual(d.source_mapping, None)
+        # TODO wish this were None
+        self.assertEqual(d.source_mapping, {})
