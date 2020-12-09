@@ -1,3 +1,9 @@
+## v0.9.0b1
+
+* Includes package data in `source_mapping` all the time.
+* Support `flit.buildapi` as alternate flit build-backend
+* Switch to usort for import sorting
+
 ## v0.8.0
 
 * Adds `Distribution.source_mapping`
