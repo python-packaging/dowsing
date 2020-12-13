@@ -70,7 +70,9 @@ async def main(packages: List[str]) -> None:
             )
             md_blob = "".join(sorted(f"{f}\n" for f in metadata.source_mapping.keys()))
 
-            if md_blob == wheel_blob:
+            if metadata.source_mapping == {}:
+                print(f"{package_name}: empty dict")
+            elif md_blob == wheel_blob:
                 print(f"{package_name}: ok")
             elif md_blob in ("", "?.py\n"):
                 print(f"{package_name}: COMPLETELY MISSING")

@@ -43,6 +43,20 @@ class SetuptoolsReader(BaseReader):
                 if getattr(d2, k):
                     setattr(d1, k, getattr(d2, k))
 
+        # This is the bare minimum to get pbr projects to show as having any
+        # sources.  I don't want to use pbr.util.cfg_to_args because it appears
+        # to import and run arbitrary code.
+        if d1.pbr:
+            where = "."
+            if d1.pbr__files__packages_root:
+                d1.package_dir = {"": d1.pbr__files__packages_root}
+                where = d1.pbr__files__packages_root
+
+            if d1.pbr__files__packages:
+                d1.packages = d1.pbr__files__packages
+            else:
+                d1.packages = FindPackages(where, (), ("*",))  # type: ignore
+
         # package_dir can both add and remove components, see docs
         # https://docs.python.org/2/distutils/setupscript.html#listing-whole-packages
         package_dir: Mapping[str, str] = d1.package_dir

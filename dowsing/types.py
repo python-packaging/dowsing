@@ -60,6 +60,9 @@ class Distribution(pkginfo.distribution.Distribution):  # type: ignore
     find_packages_exclude: Sequence[str] = ()
     find_packages_include: Sequence[str] = ("*",)
     source_mapping: Optional[Mapping[str, str]] = None
+    pbr: Optional[bool] = None
+    pbr__files__packages_root: Optional[str] = None
+    pbr__files__packages: Optional[str] = None
 
     def _getHeaderAttrs(self) -> Sequence[Tuple[str, str, bool]]:
         # Until I invent a metadata version to include this, do so
@@ -80,6 +83,9 @@ class Distribution(pkginfo.distribution.Distribution):  # type: ignore
             ("X-Packages-Dict", "packages_dict", False),
             ("X-Py-Modules", "py_modules", True),
             ("X-Entry-Points", "entry_points", False),
+            ("X-Pbr", "pbr", False),
+            ("X-pbr__files__packages_root", "pbr__files__packages_root", False),
+            ("X-pbr__files__packages", "pbr__files__packages", True),
         )
 
     def asdict(self) -> Dict[str, Any]:
