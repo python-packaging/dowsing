@@ -46,7 +46,7 @@ class SetuptoolsReader(BaseReader):
         # This is the bare minimum to get pbr projects to show as having any
         # sources.  I don't want to use pbr.util.cfg_to_args because it appears
         # to import and run arbitrary code.
-        if d1.pbr:
+        if d1.pbr or (d1.pbr__files__packages and not d1.packages):
             where = "."
             if d1.pbr__files__packages_root:
                 d1.package_dir = {"": d1.pbr__files__packages_root}

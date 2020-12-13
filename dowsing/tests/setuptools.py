@@ -303,3 +303,31 @@ packages_root = src
                 "pkg/tests/__init__.py": "src/pkg/tests/__init__.py",
             },
         )
+
+    def test_pbr_improperly_enabled(self) -> None:
+        # pbr itself is something like this.
+        d = self._read(
+            """\
+from setuptools import setup
+
+setup()""",
+            extra_files={
+                "setup.cfg": """\
+[metadata]
+name = pbr
+author = OpenStack Foundation
+
+[files]
+packages =
+    pkg
+"""
+            },
+        )
+        self.assertEqual(
+            d.source_mapping,
+            {
+                "pkg/__init__.py": "pkg/__init__.py",
+                "pkg/sub/__init__.py": "pkg/sub/__init__.py",
+                "pkg/tests/__init__.py": "pkg/tests/__init__.py",
+            },
+        )
