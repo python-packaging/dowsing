@@ -222,4 +222,15 @@ SETUP_ARGS = [
         SetupCfg("options.packages.find", "include", writer_cls=ListCommaWriter),
         sample_value=None,
     ),
+    ConfigField("pbr", SetupCfg("--unused--", "--unused--"), sample_value=None,),
+    ConfigField(
+        "pbr__files__packages_root",
+        SetupCfg("files", "packages_root"),
+        sample_value=None,
+    ),
+    ConfigField(
+        "pbr__files__packages",
+        SetupCfg("files", "packages", writer_cls=ListCommaWriter),
+        sample_value=None,
+    ),
 ]

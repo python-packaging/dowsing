@@ -1,5 +1,6 @@
 import unittest
 from pathlib import Path
+from typing import Dict, Optional
 
 import volatile
 
@@ -63,10 +64,18 @@ setup(name=the_name, install_requires=["abc"], setup_requires=["def"])
                 ("setuptools", "wheel", "def"), r.get_requires_for_build_wheel()
             )
 
-    def _read(self, data: str, src_dir: str = ".") -> Distribution:
+    def _read(
+        self,
+        data: str,
+        src_dir: str = ".",
+        extra_files: Optional[Dict[str, str]] = None,
+    ) -> Distribution:
         with volatile.dir() as d:
             sp = Path(d, "setup.py")
             sp.write_text(data)
+            if extra_files:
+                for k, v in extra_files.items():
+                    Path(d, k).write_text(v)
             Path(d, src_dir, "pkg").mkdir(parents=True)
             Path(d, src_dir, "pkg", "__init__.py").touch()
             Path(d, src_dir, "pkg", "sub").mkdir()
@@ -232,3 +241,93 @@ setup(
         )
         # TODO wish this were None
         self.assertEqual(d.source_mapping, {})
+
+    def test_pbr_properly_enabled(self) -> None:
+        d = self._read(
+            """\
+from setuptools import setup
+
+setup(
+    setup_requires=['pbr>=1.9', 'setuptools>=17.1'],
+    pbr=True,
+)""",
+            extra_files={
+                "setup.cfg": """\
+[metadata]
+name = pbr
+author = OpenStack Foundation
+
+[files]
+packages =
+    pkg
+"""
+            },
+        )
+        self.assertEqual(
+            d.source_mapping,
+            {
+                "pkg/__init__.py": "pkg/__init__.py",
+                "pkg/sub/__init__.py": "pkg/sub/__init__.py",
+                "pkg/tests/__init__.py": "pkg/tests/__init__.py",
+            },
+        )
+
+    def test_pbr_properly_enabled_src(self) -> None:
+        d = self._read(
+            """\
+from setuptools import setup
+
+setup(
+    setup_requires=['pbr>=1.9', 'setuptools>=17.1'],
+    pbr=True,
+)""",
+            src_dir="src",
+            extra_files={
+                "setup.cfg": """\
+[metadata]
+name = pbr
+author = OpenStack Foundation
+
+[files]
+packages =
+    pkg
+packages_root = src
+"""
+            },
+        )
+        self.assertEqual(
+            d.source_mapping,
+            {
+                "pkg/__init__.py": "src/pkg/__init__.py",
+                "pkg/sub/__init__.py": "src/pkg/sub/__init__.py",
+                "pkg/tests/__init__.py": "src/pkg/tests/__init__.py",
+            },
+        )
+
+    def test_pbr_improperly_enabled(self) -> None:
+        # pbr itself is something like this.
+        d = self._read(
+            """\
+from setuptools import setup
+
+setup()""",
+            extra_files={
+                "setup.cfg": """\
+[metadata]
+name = pbr
+author = OpenStack Foundation
+
+[files]
+packages =
+    pkg
+"""
+            },
+        )
+        self.assertEqual(
+            d.source_mapping,
+            {
+                "pkg/__init__.py": "pkg/__init__.py",
+                "pkg/sub/__init__.py": "pkg/sub/__init__.py",
+                "pkg/tests/__init__.py": "pkg/tests/__init__.py",
+            },
+        )
