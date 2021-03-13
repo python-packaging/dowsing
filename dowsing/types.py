@@ -106,6 +106,7 @@ class Distribution(pkginfo.distribution.Distribution):  # type: ignore
         for m in self.py_modules:
             if m == "?":
                 return None
+            m = m.replace(".", "/")
             d[f"{m}.py"] = f"{m}.py"
 
         try:
