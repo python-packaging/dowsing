@@ -99,7 +99,8 @@ class SetuptoolsReader(BaseReader):
             elif d1.packages != "??":
                 assert isinstance(d1.packages, (list, tuple))
                 for p in d1.packages:
-                    d1.packages_dict[p] = mangle(p)
+                    if p:
+                        d1.packages_dict[p] = mangle(p)
 
         d1.source_mapping = d1._source_mapping(self.path)
         return d1
