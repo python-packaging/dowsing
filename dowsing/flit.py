@@ -35,9 +35,13 @@ class FlitReader(BaseReader):
                 d.project_urls["Homepage"] = v
                 continue
             elif k == "module":
-                k = "packages"
-                v = find_packages(self.path.as_posix(), include=(f"{v}.*"))
-                d.packages_dict = {i: i.replace(".", "/") for i in v}
+                if (self.path / f"{v}.py").exists():
+                    k = "py_modules"
+                    v = [v]
+                else:
+                    k = "packages"
+                    v = find_packages(self.path.as_posix(), include=(f"{v}.*"))
+                    d.packages_dict = {i: i.replace(".", "/") for i in v}
             elif k == "description-file":
                 k = "description"
                 v = f"file: {v}"
