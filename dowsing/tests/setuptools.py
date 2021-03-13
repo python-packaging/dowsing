@@ -331,3 +331,16 @@ packages =
                 "pkg/tests/__init__.py": "pkg/tests/__init__.py",
             },
         )
+
+    def test_add_items(self) -> None:
+        d = self._read(
+            """\
+from setuptools import setup
+a = "aaaa"
+p = ["a", "b", "c"]
+setup(name = a + "1111", packages=[] + p, classifiers=a + p)
+            """
+        )
+        self.assertEqual(d.name, "aaaa1111")
+        self.assertEqual(d.packages, ["a", "b", "c"])
+        self.assertEqual(d.classifiers, "??")

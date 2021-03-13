@@ -281,6 +281,16 @@ class SetupCallAnalyzer(cst.CSTVisitor):
             else:
                 # LOG.warning(f"Omit2 {type(item.slice[0].slice)!r}")
                 return "??"
+        elif isinstance(item, cst.BinaryOperation):
+            lhs = self.evaluate_in_scope(item.left, scope)
+            rhs = self.evaluate_in_scope(item.right, scope)
+            if isinstance(item.operator, cst.Add):
+                try:
+                    return lhs + rhs
+                except Exception:
+                    return "??"
+            else:
+                return "??"
         else:
             # LOG.warning(f"Omit1 {type(item)!r}")
             return "??"
