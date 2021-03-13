@@ -74,10 +74,12 @@ def _default(obj: Any) -> Any:
 
 
 def main(path: Path) -> None:
+    metadata = get_metadata(path)
     d = {
         "get_requires_for_build_sdist": get_requires_for_build_sdist(path),
         "get_requires_for_build_wheel": get_requires_for_build_wheel(path),
-        "get_metadata": get_metadata(path).asdict(),
+        "get_metadata": metadata.asdict(),
+        "source_mapping": metadata.source_mapping,
     }
     print(json.dumps(d, default=_default))
 
