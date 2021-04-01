@@ -41,14 +41,22 @@ SETUP_ARGS = [
     ),
     ConfigField("author", SetupCfg("metadata", "author"), Metadata("Author")),
     ConfigField(
-        "author_email", SetupCfg("metadata", "author_email"), Metadata("Author-email"),
+        "author_email",
+        SetupCfg("metadata", "author_email"),
+        Metadata("Author-email"),
     ),
-    ConfigField("license", SetupCfg("metadata", "license"), Metadata("License"),),
+    ConfigField(
+        "license",
+        SetupCfg("metadata", "license"),
+        Metadata("License"),
+    ),
     # TODO licence (alternate spelling)
     # TODO license_file, license_files (setuptools-specific)
     ConfigField("url", SetupCfg("metadata", "url"), Metadata("Home-page")),
     ConfigField(
-        "description", SetupCfg("metadata", "description"), Metadata("Summary"),
+        "description",
+        SetupCfg("metadata", "description"),
+        Metadata("Summary"),
     ),
     ConfigField(
         "long_description",
@@ -222,7 +230,11 @@ SETUP_ARGS = [
         SetupCfg("options.packages.find", "include", writer_cls=ListCommaWriter),
         sample_value=None,
     ),
-    ConfigField("pbr", SetupCfg("--unused--", "--unused--"), sample_value=None,),
+    ConfigField(
+        "pbr",
+        SetupCfg("--unused--", "--unused--"),
+        sample_value=None,
+    ),
     ConfigField(
         "pbr__files__packages_root",
         SetupCfg("files", "packages_root"),

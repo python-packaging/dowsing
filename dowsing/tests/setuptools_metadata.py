@@ -80,13 +80,16 @@ class SetupArgsTest(unittest.TestCase):
 
                 name = field.get_distribution_key()
                 self.assertNotEqual(
-                    getattr(setup_py_dist, name), None,
+                    getattr(setup_py_dist, name),
+                    None,
                 )
                 self.assertEqual(
-                    foo, getattr(setup_py_dist, name),
+                    foo,
+                    getattr(setup_py_dist, name),
                 )
                 self.assertEqual(
-                    foo, getattr(setup_cfg_dist, name),
+                    foo,
+                    getattr(setup_cfg_dist, name),
                 )
 
                 if field.metadata:

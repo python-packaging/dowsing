@@ -19,7 +19,10 @@ from dowsing.setuptools.types import (
 
 class WriterTest(unittest.TestCase):
     @parameterized.expand(  # type: ignore
-        [(False,), (True,),]
+        [
+            (False,),
+            (True,),
+        ]
     )
     def test_bool_writer(self, arg: bool) -> None:
         c = ConfigFile()
@@ -32,7 +35,10 @@ class WriterTest(unittest.TestCase):
         self.assertEqual(str(arg).lower(), rcp["a"]["b"])
 
     @parameterized.expand(  # type: ignore
-        [("hello",), ("a\nb\nc",),]
+        [
+            ("hello",),
+            ("a\nb\nc",),
+        ]
     )
     def test_str_writer(self, arg: str) -> None:
         c = ConfigFile()
