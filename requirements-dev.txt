@@ -1,11 +1,12 @@
-black==19.10b0
+black==20.8b1
 click==7.1.2
 coverage==4.5.4
 flake8==3.7.9
 mypy==0.750
 tox==3.14.1
 twine==3.1.1
-usort==0.6.2
+ufmt==1.1
+usort==0.6.3
 volatile==2.1.0
 wheel==0.33.6
 honesty==0.3.0a1
