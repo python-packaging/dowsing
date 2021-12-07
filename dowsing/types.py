@@ -63,6 +63,7 @@ class Distribution(pkginfo.distribution.Distribution):  # type: ignore
     pbr: Optional[bool] = None
     pbr__files__packages_root: Optional[str] = None
     pbr__files__packages: Optional[str] = None
+    provides_extra: Optional[Sequence[str]] = ()
 
     def _getHeaderAttrs(self) -> Sequence[Tuple[str, str, bool]]:
         # Until I invent a metadata version to include this, do so
