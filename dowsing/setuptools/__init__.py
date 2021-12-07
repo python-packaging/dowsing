@@ -96,8 +96,10 @@ class SetuptoolsReader(BaseReader):
                     d1.find_packages_include,
                 ):
                     d1.packages_dict[p] = mangle(p)
-            elif d1.packages != "??":
-                assert isinstance(d1.packages, (list, tuple))
+            elif d1.packages not in ("??", "????"):
+                assert isinstance(
+                    d1.packages, (list, tuple)
+                ), f"{d1.packages!r} is not a list/tuple"
                 for p in d1.packages:
                     if p:
                         d1.packages_dict[p] = mangle(p)
