@@ -141,7 +141,13 @@ class SetupCallAnalyzer(cst.CSTVisitor):
         # TODO sometimes there is more than one setup call, we might
         # prioritize/merge...
         if any(
-            q.name in ("setuptools.setup", "distutils.core.setup", "setup3lib")
+            q.name
+            in (
+                "setuptools.setup",
+                "distutils.core.setup",
+                "setup3lib",
+                "skbuild.setup",
+            )
             for q in names
         ):
             self.found_setup = True
@@ -177,7 +183,8 @@ class SetupCallAnalyzer(cst.CSTVisitor):
 
         if isinstance(item, cst.SimpleString):
             return item.evaluated_value
-        # TODO int/float/etc
+        elif isinstance(item, (cst.Integer, cst.Float)):
+            return int(item.value)
         elif isinstance(item, cst.Name) and item.value in self.BOOL_NAMES:
             return self.BOOL_NAMES[item.value]
         elif isinstance(item, cst.Name):
@@ -277,7 +284,14 @@ class SetupCallAnalyzer(cst.CSTVisitor):
             # TODO: Figure out why this is Sequence
             if isinstance(item.slice[0].slice, cst.Index):
                 rhs = self.evaluate_in_scope(item.slice[0].slice.value, scope)
-                return lhs.get(rhs, "??")
+                try:
+                    if isinstance(lhs, dict):
+                        return lhs.get(rhs, "??")
+                    else:
+                        return lhs[rhs]
+                except Exception:
+                    return "??"
+
             else:
                 # LOG.warning(f"Omit2 {type(item.slice[0].slice)!r}")
                 return "??"
