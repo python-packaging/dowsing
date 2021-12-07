@@ -96,6 +96,12 @@ class SetupArgsTest(unittest.TestCase):
                     a = setup_py_info.get_all(field.metadata.key)
                     b = setup_cfg_info.get_all(field.metadata.key)
 
+                    # setuptools>=57 writes long_description to the body/payload
+                    # of PKG-INFO, and skips the description field entirely.
+                    if field.keyword == "long_description" and a is None:
+                        a = setup_py_info.get_payload()
+                        b = setup_cfg_info.get_payload()
+
                     # install_requires gets written out to *.egg-info/requires.txt
                     # instead
                     if field.keyword != "install_requires":
