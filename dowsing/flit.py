@@ -4,10 +4,11 @@ from typing import Sequence
 import tomlkit
 from setuptools import find_packages
 
-from .types import BaseReader, Distribution
+from .pep621 import Pep621Reader
+from .types import Distribution
 
 
-class FlitReader(BaseReader):
+class FlitReader(Pep621Reader):
     def __init__(self, path: Path):
         self.path = path
 
@@ -21,12 +22,12 @@ class FlitReader(BaseReader):
         pyproject = self.path / "pyproject.toml"
         doc = tomlkit.parse(pyproject.read_text())
 
-        d = Distribution()
-        d.metadata_version = "2.1"
-        d.project_urls = {}
-        d.entry_points = {}
+        d = self.get_pep621_metadata()
+        d.entry_points = dict(d.entry_points) or {}
 
-        for k, v in doc["tool"]["flit"]["metadata"].items():
+        flit = doc.get("tool", {}).get("flit", {})
+        metadata = flit.get("metadata", {})
+        for k, v in metadata.items():
             # TODO description-file -> long_description
             # TODO home-page -> urls
             # TODO requires -> requires_dist
@@ -52,10 +53,10 @@ class FlitReader(BaseReader):
             if k2 in d:
                 setattr(d, k2, v)
 
-        for k, v in doc["tool"]["flit"]["metadata"].get("urls", {}).items():
+        for k, v in metadata.get("urls", {}).items():
             d.project_urls[k] = v
 
-        for k, v in doc["tool"]["flit"].get("scripts", {}).items():
+        for k, v in flit.get("scripts", {}).items():
             d.entry_points[k] = v
 
         # TODO extras-require
@@ -72,8 +73,7 @@ class FlitReader(BaseReader):
 
         https://github.com/takluyver/flit/issues/141
         """
-        pyproject = self.path / "pyproject.toml"
-        doc = tomlkit.parse(pyproject.read_text())
-        seq = doc["tool"]["flit"]["metadata"].get("requires", ())
+        dist = self.get_metadata()
+        seq = dist.requires_dist
         assert isinstance(seq, (list, tuple))
         return seq
