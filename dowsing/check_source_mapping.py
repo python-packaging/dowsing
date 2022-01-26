@@ -6,7 +6,7 @@ import click
 from honesty.archive import extract_and_get_names
 from honesty.cache import Cache
 from honesty.cmdline import select_versions, wrap_async
-from honesty.releases import FileType, async_parse_index
+from honesty.releases import async_parse_index, FileType
 from moreorless.click import echo_color_unified_diff
 
 from dowsing.pep517 import get_metadata
