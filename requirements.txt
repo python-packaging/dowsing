@@ -3,3 +3,4 @@ imperfect==0.3.0
 LibCST==0.3.12
 tomlkit==0.8.0
 pkginfo==1.8.1
+dataclasses==0.8; python_version<"3.7"
