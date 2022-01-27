@@ -42,7 +42,8 @@ class PoetryReader(BaseReader):
         d.packages = []
         d.packages_dict = {}
 
-        for k, v in doc["tool"]["poetry"].items():
+        poetry = doc.get("tool", {}).get("poetry", {})
+        for k, v in poetry.items():
             if k in ("homepage", "repository", "documentation"):
                 d.project_urls[k] = v
             elif k == "packages":
@@ -64,16 +65,16 @@ class PoetryReader(BaseReader):
                 d.packages_dict[p] = p.replace(".", "/")
                 d.packages.append(p)
 
-        for k, v in doc["tool"]["poetry"].get("dependencies", {}).items():
+        for k, v in poetry.get("dependencies", {}).items():
             if k == "python":
                 pass  # TODO translate to requires_python
             else:
                 d.requires_dist.append(k)  # TODO something with version
 
-        for k, v in doc["tool"]["poetry"].get("urls", {}).items():
+        for k, v in poetry.get("urls", {}).items():
             d.project_urls[k] = v
 
-        for k, v in doc["tool"]["poetry"].get("scripts", {}).items():
+        for k, v in poetry.get("scripts", {}).items():
             d.entry_points[k] = v
 
         d.source_mapping = d._source_mapping(self.path)

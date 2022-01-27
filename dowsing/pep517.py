@@ -26,13 +26,14 @@ def get_backend(path: Path) -> Tuple[List[str], BaseReader]:
     requires: List[str] = []
     if pyproject.exists():
         doc = tomlkit.parse(pyproject.read_text())
-        if "build-system" in doc:
-            # 1b. include any build-system requires
-            if "requires" in doc["build-system"]:
-                requires.extend(doc["build-system"]["requires"])
-            if "build-backend" in doc["build-system"]:
-                backend = doc["build-system"]["build-backend"]
-            # TODO backend-path
+        table = doc.get("build-system", {})
+
+        # 1b. include any build-system requires
+        if "requires" in table:
+            requires.extend(table["requires"])
+        if "build-backend" in table:
+            backend = table["build-backend"]
+        # TODO backend-path
 
     try:
         backend_path = KNOWN_BACKENDS[backend]
