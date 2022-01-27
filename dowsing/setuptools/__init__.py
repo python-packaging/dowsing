@@ -61,7 +61,7 @@ class SetuptoolsReader(BaseReader):
         # https://docs.python.org/2/distutils/setupscript.html#listing-whole-packages
         package_dir: Mapping[str, str] = d1.package_dir
         # If there was an error, we might have written "??"
-        if package_dir != "??":
+        if package_dir != "??":  # type: ignore
             if not package_dir:
                 package_dir = {"": "."}
 
