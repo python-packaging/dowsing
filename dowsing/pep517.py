@@ -11,6 +11,7 @@ from .types import BaseReader, Distribution
 KNOWN_BACKENDS: Dict[str, str] = {
     "setuptools.build_meta:__legacy__": "dowsing.setuptools:SetuptoolsReader",
     "setuptools.build_meta": "dowsing.setuptools:SetuptoolsReader",
+    "jupyter_packaging.build_api": "dowsing.setuptools:SetuptoolsReader",
     "flit_core.buildapi": "dowsing.flit:FlitReader",
     "flit.buildapi": "dowsing.flit:FlitReader",
     "maturin": "dowsing.maturin:MaturinReader",
