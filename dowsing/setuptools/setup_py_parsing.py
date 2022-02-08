@@ -178,7 +178,9 @@ class SetupCallAnalyzer(cst.CSTVisitor):
     BOOL_NAMES = {"True": True, "False": False, "None": None}
     PRETEND_ARGV = ["setup.py", "bdist_wheel"]
 
-    def evaluate_in_scope(self, item: cst.CSTNode, scope: Any) -> Any:
+    def evaluate_in_scope(
+        self, item: cst.CSTNode, scope: Any, target_name: str = ""
+    ) -> Any:
         qnames = self.get_metadata(QualifiedNameProvider, item)
 
         if isinstance(item, cst.SimpleString):
@@ -224,13 +226,23 @@ class SetupCallAnalyzer(cst.CSTVisitor):
                     # module scope isn't in the dict
                     return "??"
 
-                return self.evaluate_in_scope(gp.value, scope)
+                # we have recursed, likey due to `x = x + y` assignment or similar
+                # self-referential evaluation
+                if target_name and target_name == name:
+                    return "??"
+
+                # keep trying assignments until we get something other than ??
+                result = self.evaluate_in_scope(gp.value, scope, name)
+                if result and result != "??":
+                    return result
+            # give up
+            return "??"
         elif isinstance(item, (cst.Tuple, cst.List)):
             lst = []
             for el in item.elements:
                 lst.append(
                     self.evaluate_in_scope(
-                        el.value, self.get_metadata(ScopeProvider, el)
+                        el.value, self.get_metadata(ScopeProvider, el), target_name
                     )
                 )
             if isinstance(item, cst.Tuple):
@@ -248,10 +260,10 @@ class SetupCallAnalyzer(cst.CSTVisitor):
             for arg in item.args:
                 if isinstance(arg.keyword, cst.Name):
                     args[names.index(arg.keyword.value)] = self.evaluate_in_scope(
-                        arg.value, scope
+                        arg.value, scope, target_name
                     )
                 else:
-                    args[i] = self.evaluate_in_scope(arg.value, scope)
+                    args[i] = self.evaluate_in_scope(arg.value, scope, target_name)
                     i += 1
 
             # TODO clear ones that are still default
@@ -264,7 +276,9 @@ class SetupCallAnalyzer(cst.CSTVisitor):
             d = {}
             for arg in item.args:
                 if isinstance(arg.keyword, cst.Name):
-                    d[arg.keyword.value] = self.evaluate_in_scope(arg.value, scope)
+                    d[arg.keyword.value] = self.evaluate_in_scope(
+                        arg.value, scope, target_name
+                    )
                 # TODO something with **kwargs
             return d
         elif isinstance(item, cst.Dict):
@@ -272,18 +286,20 @@ class SetupCallAnalyzer(cst.CSTVisitor):
             for el2 in item.elements:
                 if isinstance(el2, cst.DictElement):
                     d[self.evaluate_in_scope(el2.key, scope)] = self.evaluate_in_scope(
-                        el2.value, scope
+                        el2.value, scope, target_name
                     )
             return d
         elif isinstance(item, cst.Subscript):
-            lhs = self.evaluate_in_scope(item.value, scope)
+            lhs = self.evaluate_in_scope(item.value, scope, target_name)
             if isinstance(lhs, str):
                 # A "??" entry, propagate
                 return "??"
 
             # TODO: Figure out why this is Sequence
             if isinstance(item.slice[0].slice, cst.Index):
-                rhs = self.evaluate_in_scope(item.slice[0].slice.value, scope)
+                rhs = self.evaluate_in_scope(
+                    item.slice[0].slice.value, scope, target_name
+                )
                 try:
                     if isinstance(lhs, dict):
                         return lhs.get(rhs, "??")
@@ -296,8 +312,10 @@ class SetupCallAnalyzer(cst.CSTVisitor):
                 # LOG.warning(f"Omit2 {type(item.slice[0].slice)!r}")
                 return "??"
         elif isinstance(item, cst.BinaryOperation):
-            lhs = self.evaluate_in_scope(item.left, scope)
-            rhs = self.evaluate_in_scope(item.right, scope)
+            lhs = self.evaluate_in_scope(item.left, scope, target_name)
+            rhs = self.evaluate_in_scope(item.right, scope, target_name)
+            if lhs == "??" or rhs == "??":
+                return "??"
             if isinstance(item.operator, cst.Add):
                 try:
                     return lhs + rhs
