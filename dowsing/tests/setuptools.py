@@ -344,3 +344,32 @@ setup(name = a + "1111", packages=[] + p, classifiers=a + p)
         self.assertEqual(d.name, "aaaa1111")
         self.assertEqual(d.packages, ["a", "b", "c"])
         self.assertEqual(d.classifiers, "??")
+
+    def test_self_reference_assignments(self) -> None:
+        d = self._read(
+            """\
+from setuptools import setup
+
+version = "base"
+name = "foo"
+name += "bar"
+version = version + ".suffix"
+
+classifiers = [
+    "123",
+    "abc",
+]
+
+if True:
+    classifiers = classifiers + ["xyz"]
+
+setup(
+    name=name,
+    version=version,
+    classifiers=classifiers,
+)
+            """
+        )
+        self.assertEqual(d.name, "foobar")
+        self.assertEqual(d.version, "base.suffix")
+        self.assertListEqual(d.classifiers, ["123", "abc", "xyz"])
