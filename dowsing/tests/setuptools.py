@@ -373,3 +373,23 @@ setup(
         self.assertEqual(d.name, "foobar")
         self.assertEqual(d.version, "base.suffix")
         self.assertListEqual(d.classifiers, ["123", "abc", "xyz"])
+
+    def test_circular_references(self) -> None:
+        d = self._read(
+            """\
+from setuptools import setup
+
+name = "foo"
+
+foo = bar
+bar = version
+version = foo
+
+setup(
+    name=name,
+    version=version,
+)
+            """
+        )
+        self.assertEqual(d.name, "foo")
+        self.assertEqual(d.version, "??")
