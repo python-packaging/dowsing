@@ -385,6 +385,8 @@ foo = bar
 bar = version
 version = foo
 
+classifiers = classifiers
+
 setup(
     name=name,
     version=version,
@@ -393,3 +395,4 @@ setup(
         )
         self.assertEqual(d.name, "foo")
         self.assertEqual(d.version, "??")
+        self.assertEqual(d.classifiers, ())
