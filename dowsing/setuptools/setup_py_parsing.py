@@ -8,7 +8,12 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 import libcst as cst
-from libcst.metadata import ParentNodeProvider, QualifiedNameProvider, ScopeProvider
+from libcst.metadata import (
+    ParentNodeProvider,
+    PositionProvider,
+    QualifiedNameProvider,
+    ScopeProvider,
+)
 
 from ..types import Distribution
 from .setup_and_metadata import SETUP_ARGS
@@ -124,7 +129,12 @@ class SetupCallTransformer(cst.CSTTransformer):
 
 
 class SetupCallAnalyzer(cst.CSTVisitor):
-    METADATA_DEPENDENCIES = (ScopeProvider, ParentNodeProvider, QualifiedNameProvider)
+    METADATA_DEPENDENCIES = (
+        ScopeProvider,
+        ParentNodeProvider,
+        QualifiedNameProvider,
+        PositionProvider,
+    )
 
     # TODO names resulting from other than 'from setuptools import setup'
     # TODO wrapper funcs that modify args
@@ -178,7 +188,9 @@ class SetupCallAnalyzer(cst.CSTVisitor):
     BOOL_NAMES = {"True": True, "False": False, "None": None}
     PRETEND_ARGV = ["setup.py", "bdist_wheel"]
 
-    def evaluate_in_scope(self, item: cst.CSTNode, scope: Any) -> Any:
+    def evaluate_in_scope(
+        self, item: cst.CSTNode, scope: Any, target_line: int = 0
+    ) -> Any:
         qnames = self.get_metadata(QualifiedNameProvider, item)
 
         if isinstance(item, cst.SimpleString):
@@ -190,19 +202,36 @@ class SetupCallAnalyzer(cst.CSTVisitor):
         elif isinstance(item, cst.Name):
             name = item.value
             assignments = scope[name]
-            for a in assignments:
-                # TODO: Only assignments "before" this node matter if in the
-                # same scope; really if we had a call graph and walked the other
-                # way, we could have a better idea of what has already happened.
+            assignment_nodes = sorted(
+                (
+                    (self.get_metadata(PositionProvider, a.node).start.line, a.node)
+                    for a in assignments
+                    if a.node
+                ),
+                reverse=True,
+            )
+            # Walk assignments from bottom to top, evaluating them recursively.
+            for lineno, node in assignment_nodes:
+
+                # When recursing, only look at assignments above the "target line".
+                if target_line and lineno >= target_line:
+                    continue
 
                 # Assign(
                 #   targets=[AssignTarget(target=Name(value="v"))],
                 #   value=SimpleString(value="'x'"),
                 # )
+                #
+                # AugAssign(
+                #   target=Name(value="v"),
+                #   operator=AddAssign(...),
+                #   value=SimpleString(value="'x'"),
+                # )
+                #
                 # TODO or an import...
                 # TODO builtins have BuiltinAssignment
+
                 try:
-                    node = a.node
                     if node:
                         parent = self.get_metadata(ParentNodeProvider, node)
                         if parent:
@@ -212,25 +241,37 @@ class SetupCallAnalyzer(cst.CSTVisitor):
                     else:
                         raise KeyError
                 except (KeyError, AttributeError):
-                    return "??"
-
-                # This presumes a single assignment
-                if not isinstance(gp, cst.Assign) or len(gp.targets) != 1:
-                    return "??"  # TooComplicated(repr(gp))
+                    continue
 
                 try:
                     scope = self.get_metadata(ScopeProvider, gp)
                 except KeyError:
                     # module scope isn't in the dict
-                    return "??"
+                    continue
 
-                return self.evaluate_in_scope(gp.value, scope)
+                # This presumes a single assignment
+                if isinstance(gp, cst.Assign) and len(gp.targets) == 1:
+                    result = self.evaluate_in_scope(gp.value, scope, lineno)
+                elif isinstance(parent, cst.AugAssign):
+                    result = self.evaluate_in_scope(parent, scope, lineno)
+                else:
+                    # too complicated?
+                    continue
+
+                # keep trying assignments until we get something other than ??
+                if result != "??":
+                    return result
+
+            # give up
+            return "??"
         elif isinstance(item, (cst.Tuple, cst.List)):
             lst = []
             for el in item.elements:
                 lst.append(
                     self.evaluate_in_scope(
-                        el.value, self.get_metadata(ScopeProvider, el)
+                        el.value,
+                        self.get_metadata(ScopeProvider, el),
+                        target_line,
                     )
                 )
             if isinstance(item, cst.Tuple):
@@ -248,10 +289,10 @@ class SetupCallAnalyzer(cst.CSTVisitor):
             for arg in item.args:
                 if isinstance(arg.keyword, cst.Name):
                     args[names.index(arg.keyword.value)] = self.evaluate_in_scope(
-                        arg.value, scope
+                        arg.value, scope, target_line
                     )
                 else:
-                    args[i] = self.evaluate_in_scope(arg.value, scope)
+                    args[i] = self.evaluate_in_scope(arg.value, scope, target_line)
                     i += 1
 
             # TODO clear ones that are still default
@@ -264,7 +305,9 @@ class SetupCallAnalyzer(cst.CSTVisitor):
             d = {}
             for arg in item.args:
                 if isinstance(arg.keyword, cst.Name):
-                    d[arg.keyword.value] = self.evaluate_in_scope(arg.value, scope)
+                    d[arg.keyword.value] = self.evaluate_in_scope(
+                        arg.value, scope, target_line
+                    )
                 # TODO something with **kwargs
             return d
         elif isinstance(item, cst.Dict):
@@ -272,18 +315,20 @@ class SetupCallAnalyzer(cst.CSTVisitor):
             for el2 in item.elements:
                 if isinstance(el2, cst.DictElement):
                     d[self.evaluate_in_scope(el2.key, scope)] = self.evaluate_in_scope(
-                        el2.value, scope
+                        el2.value, scope, target_line
                     )
             return d
         elif isinstance(item, cst.Subscript):
-            lhs = self.evaluate_in_scope(item.value, scope)
+            lhs = self.evaluate_in_scope(item.value, scope, target_line)
             if isinstance(lhs, str):
                 # A "??" entry, propagate
                 return "??"
 
             # TODO: Figure out why this is Sequence
             if isinstance(item.slice[0].slice, cst.Index):
-                rhs = self.evaluate_in_scope(item.slice[0].slice.value, scope)
+                rhs = self.evaluate_in_scope(
+                    item.slice[0].slice.value, scope, target_line
+                )
                 try:
                     if isinstance(lhs, dict):
                         return lhs.get(rhs, "??")
@@ -296,9 +341,23 @@ class SetupCallAnalyzer(cst.CSTVisitor):
                 # LOG.warning(f"Omit2 {type(item.slice[0].slice)!r}")
                 return "??"
         elif isinstance(item, cst.BinaryOperation):
-            lhs = self.evaluate_in_scope(item.left, scope)
-            rhs = self.evaluate_in_scope(item.right, scope)
+            lhs = self.evaluate_in_scope(item.left, scope, target_line)
+            rhs = self.evaluate_in_scope(item.right, scope, target_line)
+            if lhs == "??" or rhs == "??":
+                return "??"
             if isinstance(item.operator, cst.Add):
+                try:
+                    return lhs + rhs
+                except Exception:
+                    return "??"
+            else:
+                return "??"
+        elif isinstance(item, cst.AugAssign):
+            lhs = self.evaluate_in_scope(item.target, scope, target_line)
+            rhs = self.evaluate_in_scope(item.value, scope, target_line)
+            if lhs == "??" or rhs == "??":
+                return "??"
+            if isinstance(item.operator, cst.AddAssign):
                 try:
                     return lhs + rhs
                 except Exception:
