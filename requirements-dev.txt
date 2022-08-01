@@ -1,7 +1,7 @@
 black==22.1.0
 click==8.0.3
 coverage==4.5.4
-flake8==3.7.9
+flake8==5.0.2
 mypy==0.931
 tox==3.24.5
 twine==3.1.1
