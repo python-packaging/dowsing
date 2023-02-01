@@ -2,5 +2,5 @@ highlighter==0.1.1
 imperfect==0.3.0
 LibCST==0.3.12
 tomlkit==0.9.0
-pkginfo==1.8.1
+pkginfo==1.9.6
 dataclasses==0.8; python_version<"3.7"
