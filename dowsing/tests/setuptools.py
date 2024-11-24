@@ -372,7 +372,7 @@ setup(
         )
         self.assertEqual(d.name, "foobar")
         self.assertEqual(d.version, "base.suffix")
-        self.assertListEqual(d.classifiers, ["123", "abc", "xyz"])
+        self.assertSequenceEqual(d.classifiers, ["123", "abc", "xyz"])
 
     def test_circular_references(self) -> None:
         d = self._read(
