@@ -25,7 +25,8 @@ class MaturinReader(BaseReader):
 
         cargo = self.path / "Cargo.toml"
         doc = tomlkit.parse(cargo.read_text())
-        for k, v in doc["package"].items():
+        package = doc.get("package", {})
+        for k, v in package.items():
             if k == "name":
                 d.name = v
             elif k == "version":
@@ -39,7 +40,8 @@ class MaturinReader(BaseReader):
             # homepage
             # readme (filename)
 
-        for k, v in doc["package"]["metadata"]["maturin"].items():
+        maturin = package.get("metadata", {}).get("maturin", {})
+        for k, v in maturin.items():
             if k == "requires-python":
                 d.requires_python = v
             elif k == "classifier":

@@ -92,7 +92,7 @@ class FileReference:
 
 
 class SetupCallTransformer(cst.CSTTransformer):
-    METADATA_DEPENDENCIES = (ScopeProvider, ParentNodeProvider, QualifiedNameProvider)  # type: ignore
+    METADATA_DEPENDENCIES = (ScopeProvider, ParentNodeProvider, QualifiedNameProvider)
 
     def __init__(
         self,
@@ -124,7 +124,7 @@ class SetupCallTransformer(cst.CSTTransformer):
 
 
 class SetupCallAnalyzer(cst.CSTVisitor):
-    METADATA_DEPENDENCIES = (ScopeProvider, ParentNodeProvider, QualifiedNameProvider)  # type: ignore
+    METADATA_DEPENDENCIES = (ScopeProvider, ParentNodeProvider, QualifiedNameProvider)
 
     # TODO names resulting from other than 'from setuptools import setup'
     # TODO wrapper funcs that modify args
