@@ -9,52 +9,65 @@ on:
       - v*
   pull_request:
 
+env:
+  UV_SYSTEM_PYTHON: 1
+
 jobs:
-  dowsing:
+  test:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.6", "3.7", "3.8", "3.9"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
         os: [macOS-latest, ubuntu-latest, windows-latest]
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
       - name: Set Up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - uses: astral-sh/setup-uv@v3
       - name: Install
         run: |
-          python -m pip install --upgrade pip
-          make setup
-          pip install -U .
+          uv pip install -e .[test]
       - name: Test
         run: make test
       - name: Lint
-        run: make lint
+        run: |
+          uv pip install -e .[test,dev]
+          make lint
+        if: ${{ matrix.python-version != '3.9' && matrix.python-version != '3.8' }}
 
-  check-deps:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.6", "3.7", "3.8", "3.9"]
-        os: [ubuntu-latest]
-
+  build:
+    needs: test
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-      - name: Set Up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v3
       - name: Install
-        run: |
-          python -m pip install --upgrade pip
-          pip install 'pessimist>=0.8.0'
-          echo 'importall>=0.2.1' > importall.txt
-      - name: Check Deps
-        run: |
-          python -m pessimist --requirements=importall.txt --fast -c 'importall --root=. --exclude=tests,_demo_pep517.py,check_source_mapping.py dowsing' .
+        run: uv pip install build
+      - name: Build
+        run: python -m build
+      - name: Upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: sdist
+          path: dist
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: sdist
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@release/v1
