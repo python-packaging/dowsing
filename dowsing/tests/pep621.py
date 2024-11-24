@@ -51,7 +51,7 @@ Foo = "https://"
                     "packages": ["foo", "foo.tests"],
                     "packages_dict": {"foo": "foo", "foo.tests": "foo/tests"},
                     "requires_dist": ["abc", "def"],
-                    "project_urls": {"Foo": "https://"},
+                    "project_urls": ["Foo=https://"],
                 },
                 md.asdict(),
             )

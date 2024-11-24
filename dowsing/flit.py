@@ -57,7 +57,7 @@ class FlitReader(Pep621Reader):
                 setattr(d, k2, v)
 
         for k, v in metadata.get("urls", {}).items():
-            d.project_urls[k] = v
+            d.project_urls.append(f"{k}={v}")
 
         for k, v in flit.get("scripts", {}).items():
             d.entry_points[k] = v

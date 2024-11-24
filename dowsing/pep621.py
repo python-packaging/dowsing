@@ -42,7 +42,7 @@ class Pep621Reader(BaseReader):
                 elif k == "optional-dependencies":
                     pass
                 elif k == "urls":
-                    d.project_urls.extend(v)
+                    d.project_urls.extend([f"{x}={y}" for x, y in v.items()])
 
                 k2 = k.replace("-", "_")
                 if k2 in d:

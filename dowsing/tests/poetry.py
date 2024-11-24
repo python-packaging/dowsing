@@ -41,10 +41,10 @@ functools32 = { version = "^3.2.3", python = "~2.7" }
             self.assertEqual("1.5.2", md.version)
             self.assertEqual("BSD-3-Clause", md.license)
             self.assertEqual(
-                {
-                    "homepage": "http://example.com",
-                    "Bug Tracker": "https://github.com/python-poetry/poetry/issues",
-                },
+                [
+                    "homepage=http://example.com",
+                    "Bug Tracker=https://github.com/python-poetry/poetry/issues",
+                ],
                 md.project_urls,
             )
             self.assertEqual(["Not a real classifier"], md.classifiers)
