@@ -175,7 +175,7 @@ SETUP_ARGS = [
     ConfigField(
         "packages",
         SetupCfg("options", "packages", writer_cls=ListCommaWriter),
-        sample_value=["a", "b"],
+        sample_value=["a"],
     ),
     ConfigField(
         "package_dir",

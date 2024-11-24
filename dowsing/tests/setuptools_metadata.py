@@ -31,13 +31,13 @@ def egg_info(files: Dict[str, str]) -> Tuple[Message, Distribution]:
 
             os.chdir(d)
             sys.stdout = io.StringIO()
-            dist = run_setup(f"setup.py", ["egg_info"])
+            dist = run_setup("setup.py", ["egg_info"])
         finally:
             os.chdir(cwd)
             sys.stdout = stdout
 
         sources = list(Path(d).rglob("PKG-INFO"))
-        assert len(sources) == 1
+        assert len(sources) == 1, sources
 
         with open(sources[0]) as f:
             parser = email.parser.Parser()
@@ -63,7 +63,6 @@ class SetupArgsTest(unittest.TestCase):
                         "setup.py": "from setuptools import setup\n"
                         f"setup({field.keyword}={foo!r})\n",
                         "a/__init__.py": "",
-                        "b/__init__.py": "",
                     }
                 )
 
@@ -74,7 +73,6 @@ class SetupArgsTest(unittest.TestCase):
                         f"{field.cfg.key} = {cfg_format_foo}\n",
                         "setup.py": "from setuptools import setup\n" "setup()\n",
                         "a/__init__.py": "",
-                        "b/__init__.py": "",
                     }
                 )
 
