@@ -36,16 +36,18 @@ class PoetryReader(BaseReader):
 
         d = Distribution()
         d.metadata_version = "2.1"
-        d.project_urls = {}
+        d.project_urls = []
         d.entry_points = {}
         d.requires_dist = []
         d.packages = []
         d.packages_dict = {}
 
+        assert isinstance(d.project_urls, list)
+
         poetry = doc.get("tool", {}).get("poetry", {})
         for k, v in poetry.items():
             if k in ("homepage", "repository", "documentation"):
-                d.project_urls[k] = v
+                d.project_urls.append(f"{k}={v}")
             elif k == "packages":
                 # TODO improve and add tests; this works for tf2_utils and
                 # poetry itself but include can be a glob and there are excludes
@@ -72,7 +74,7 @@ class PoetryReader(BaseReader):
                 d.requires_dist.append(k)  # TODO something with version
 
         for k, v in poetry.get("urls", {}).items():
-            d.project_urls[k] = v
+            d.project_urls.append(f"{k}={v}")
 
         for k, v in poetry.get("scripts", {}).items():
             d.entry_points[k] = v

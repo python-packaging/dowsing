@@ -11,11 +11,13 @@ class Pep621Reader(BaseReader):
 
         d = Distribution()
         d.metadata_version = "2.1"
-        d.project_urls = {}
+        d.project_urls = []
         d.entry_points = {}
         d.requires_dist = []
         d.packages = []
         d.packages_dict = {}
+
+        assert isinstance(d.project_urls, list)
 
         table = doc.get("project", None)
         if table:
@@ -40,7 +42,7 @@ class Pep621Reader(BaseReader):
                 elif k == "optional-dependencies":
                     pass
                 elif k == "urls":
-                    d.project_urls.update(v)
+                    d.project_urls.extend(v)
 
                 k2 = k.replace("-", "_")
                 if k2 in d:

@@ -43,8 +43,8 @@ def egg_info(files: Dict[str, str]) -> Tuple[Message, Distribution]:
             parser = email.parser.Parser()
             info = parser.parse(f)
         reader = SetuptoolsReader(Path(d))
-        dist = reader.get_metadata()
-        return info, dist
+        dist = reader.get_metadata()  # type: ignore[assignment]
+        return info, dist  # type: ignore[return-value]
 
 
 # These tests do not increase coverage, and just verify that we have the right
@@ -97,8 +97,8 @@ class SetupArgsTest(unittest.TestCase):
                     # setuptools>=57 writes long_description to the body/payload
                     # of PKG-INFO, and skips the description field entirely.
                     if field.keyword == "long_description" and a is None:
-                        a = setup_py_info.get_payload()
-                        b = setup_cfg_info.get_payload()
+                        a = setup_py_info.get_payload()  # type: ignore[assignment]
+                        b = setup_cfg_info.get_payload()  # type: ignore[assignment]
 
                     # install_requires gets written out to *.egg-info/requires.txt
                     # instead

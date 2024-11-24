@@ -37,9 +37,8 @@ class BaseReader:
 
 DEFAULT_EMPTY_DICT: Mapping[str, Any] = MappingProxyType({})
 
-# TODO: pkginfo isn't typed, and is doing to require a yak-shave to send a PR
-# since it's on launchpad.
-class Distribution(pkginfo.distribution.Distribution):  # type: ignore
+
+class Distribution(pkginfo.distribution.Distribution):
     # These are not actually part of the metadata, see PEP 566
     setup_requires: Sequence[str] = ()
     tests_require: Sequence[str] = ()
@@ -68,7 +67,8 @@ class Distribution(pkginfo.distribution.Distribution):  # type: ignore
     def _getHeaderAttrs(self) -> Sequence[Tuple[str, str, bool]]:
         # Until I invent a metadata version to include this, do so
         # unconditionally.
-        return tuple(super()._getHeaderAttrs()) + (
+        # Stubs are wrong, this does too exist.
+        return tuple(super()._getHeaderAttrs()) + (  # type: ignore[misc]
             ("X-Setup-Requires", "setup_requires", True),
             ("X-Tests-Require", "tests_require", True),
             ("???", "extras_require", False),

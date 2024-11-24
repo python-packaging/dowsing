@@ -1,6 +1,7 @@
 """
 For testing, dump the requirements that we find using the pep517 project.
 """
+
 import json
 import sys
 
@@ -19,12 +20,12 @@ def main(path: str) -> None:
     d = {}
     with BuildEnvironment() as env:
         env.pip_install(requires)
-        d[
-            "get_requires_for_build_sdist"
-        ] = requires + hooks.get_requires_for_build_sdist(None)
-        d[
-            "get_requires_for_build_wheel"
-        ] = requires + hooks.get_requires_for_build_wheel(None)
+        d["get_requires_for_build_sdist"] = (
+            requires + hooks.get_requires_for_build_sdist(None)
+        )
+        d["get_requires_for_build_wheel"] = (
+            requires + hooks.get_requires_for_build_wheel(None)
+        )
 
     print(json.dumps(d))
 

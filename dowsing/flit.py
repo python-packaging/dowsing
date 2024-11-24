@@ -24,6 +24,9 @@ class FlitReader(Pep621Reader):
 
         d = self.get_pep621_metadata()
         d.entry_points = dict(d.entry_points) or {}
+        d.project_urls = list(d.project_urls)
+
+        assert isinstance(d.project_urls, list)
 
         flit = doc.get("tool", {}).get("flit", {})
         metadata = flit.get("metadata", {})
@@ -33,7 +36,7 @@ class FlitReader(Pep621Reader):
             # TODO requires -> requires_dist
             # TODO tool.flit.metadata.urls
             if k == "home-page":
-                d.project_urls["Homepage"] = v
+                d.project_urls.append("Homepage={v}")
                 continue
             elif k == "module":
                 if (self.path / f"{v}.py").exists():
