@@ -396,3 +396,24 @@ setup(
         self.assertEqual(d.name, "foo")
         self.assertEqual(d.version, "??")
         self.assertEqual(d.classifiers, ())
+
+    def test_redefines_builtin(self) -> None:
+        d = self._read(
+            """\
+import setuptools
+with open("CREDITS.txt", "r", encoding="utf-8") as fp:
+    credits = fp.read()
+
+long_desc = "a" + credits + "b"
+name = "foo"
+
+kwargs = dict(
+    long_description = long_desc,
+    name = name,
+)
+
+setuptools.setup(**kwargs)
+"""
+        )
+        self.assertEqual(d.name, "foo")
+        self.assertEqual(d.description, "??")
