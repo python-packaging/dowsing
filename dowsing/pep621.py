@@ -31,7 +31,9 @@ class Pep621Reader(BaseReader):
                         )
                         d.packages_dict = {i: i.replace(".", "/") for i in d.packages}
                 elif k == "license":
-                    if "text" in v:
+                    if isinstance(v, str):
+                        pass  # PEP 639 proposes `license = "MIT"` style metadata
+                    elif "text" in v:
                         v = v["text"]
                     elif "file" in v:
                         v = f"file: {v['file']}"

@@ -55,3 +55,19 @@ Foo = "https://"
                 },
                 md.asdict(),
             )
+
+    def test_pep639(self) -> None:
+        with volatile.dir() as d:
+            dp = Path(d)
+            (dp / "pyproject.toml").write_text(
+                """\
+[project]
+name = "Name"
+license = "MIT"
+"""
+            )
+
+            r = Pep621Reader(dp)
+            md = r.get_pep621_metadata()
+            self.assertEqual("Name", md.name)
+            self.assertEqual("MIT", md.license)
