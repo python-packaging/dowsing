@@ -1,3 +1,10 @@
+## v0.9.0b3
+
+* Support PEP 639 style metadata (#76)
+* Support more `setup.py` assignments (#57)
+* 3.12 compat (depends on setuptools)
+* Fix tests to work on modern Python
+
 ## v0.9.0b2
 
 * `source_mapping` bugfixes
