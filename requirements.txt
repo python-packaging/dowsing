@@ -2,4 +2,4 @@ highlighter==0.2.0
 imperfect==0.3.0
 LibCST==1.5.1
 tomlkit==0.13.2
-pkginfo==1.11.2
+pkginfo==1.12.0
